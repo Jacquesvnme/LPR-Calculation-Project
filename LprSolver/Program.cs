@@ -1,6 +1,5 @@
-﻿using App = LprSolver.Application.Application;
-using LprSolver.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using App = LprSolver.Application.Application;
 
 namespace LprSolver;
 
