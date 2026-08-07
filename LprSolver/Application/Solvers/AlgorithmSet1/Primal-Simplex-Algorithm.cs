@@ -7,11 +7,21 @@ namespace LprSolver.Application.Solvers.AlgorithmSet1;
 /// </summary>
 public interface IPrimal_Simplex_Algorithm
 {
-    void Execute(LinearProgram linearProgram);
+    Task<(bool Success, string Message, Primal_Simplex_Algorithm.SimplexTable Table)> Execute(
+        LinearProgram linearProgram
+    );
 }
 
 public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
 {
+    /// <summary>
+    /// Represents the tabular output of the primal simplex algorithm.
+    /// </summary>
+    public class SimplexTable
+    {
+        public List<List<string>> Rows { get; set; } = new();
+    }
+
     /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
@@ -23,13 +33,27 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
     /// <summary>
     /// Main method to execute the Algorithm.
     /// </summary>
-    public void Execute(LinearProgram linearProgram)
+    public async Task<(bool Success, string Message, SimplexTable Table)> Execute(
+        LinearProgram linearProgram
+    )
     {
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
+
+        var table = new SimplexTable
+        {
+            Rows = new List<List<string>>
+            {
+                new() { "Basic", "x1", "x2", "RHS" },
+                new() { "s1", "1", "0", "4" },
+                new() { "s2", "0", "1", "6" },
+            },
+        };
+
+        return (true, "Dummy primal simplex table created successfully.", table);
     }
 
     private void OtherMethods()
