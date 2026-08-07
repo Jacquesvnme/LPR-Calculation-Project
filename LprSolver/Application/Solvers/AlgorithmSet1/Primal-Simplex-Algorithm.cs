@@ -7,7 +7,7 @@ namespace LprSolver.Application.Solvers.AlgorithmSet1;
 /// </summary>
 public interface IPrimal_Simplex_Algorithm
 {
-    Task<(bool Success, string Message, Primal_Simplex_Algorithm.SimplexTable Table)> Execute(
+    Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
         LinearProgram linearProgram
     );
 }
@@ -33,7 +33,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
     /// <summary>
     /// Main method to execute the Algorithm.
     /// </summary>
-    public async Task<(bool Success, string Message, SimplexTable Table)> Execute(
+    public async Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
         LinearProgram linearProgram
     )
     {
@@ -43,17 +43,15 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
 
-        var table = new SimplexTable
+        var exportReport = new ExportReport
         {
-            Rows = new List<List<string>>
-            {
-                new() { "Basic", "x1", "x2", "RHS" },
-                new() { "s1", "1", "0", "4" },
-                new() { "s2", "0", "1", "6" },
-            },
+            AdditionalData = new List<string>(),
+            ImportantDetails = new List<string>(),
+            SensitivityAnalysis = new List<string>(),
+            Tables = new List<List<List<string>>>(),
         };
 
-        return (true, "Dummy primal simplex table created successfully.", table);
+        return new(true, "Dummy primal simplex table created successfully.", exportReport);
     }
 
     private void OtherMethods()

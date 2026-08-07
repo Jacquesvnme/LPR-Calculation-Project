@@ -67,7 +67,11 @@ public class SolverSelection : ISolverSelection
         {
             case SolverAlgorithm.PrimalSimplex:
                 var primal_simplex = await _primal_Simplex_Algorithm.Execute(linearProgram);
-                return (primal_simplex.Success, primal_simplex.Message, primal_simplex.Table);
+                return (
+                    primal_simplex.Success,
+                    primal_simplex.Message,
+                    primal_simplex.exportTableData
+                );
 
             case SolverAlgorithm.Revised_PrimalSimplex:
                 _revised_Primal_Simplex_Algorithm.Execute(linearProgram);
