@@ -19,6 +19,12 @@ public static class ConsoleExtensions
         return Task.CompletedTask;
     }
 
+    public static async Task CompletedEvent(string Text)
+    {
+        AnsiConsole.MarkupLine($"[blue]Info:[/] {Text}");
+        await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+
     public static Task MarkupDefault(string text)
     {
         AnsiConsole.MarkupLine($"[gray]{text}[/]");

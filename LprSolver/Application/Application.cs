@@ -65,6 +65,8 @@ public class Application
             return;
         }
 
+        await ConsoleExtensions.CompletedEvent("File imported successfully...");
+
         var importedLinearProgram = await _importer.ImportDataFromTextFile(
             importedFilePath.FilePath
         );
@@ -75,7 +77,9 @@ public class Application
             return;
         }
 
-        SolverAlgorithm userSelectedOption = await _solver.GetUserSelectedOption();
+        await ConsoleExtensions.CompletedEvent("Data imported successfully...");
+
+        SolverAlgorithm userSelectedOption = await _menu.GetUserSelectedOption();
         if (userSelectedOption == SolverAlgorithm.INVALID_OPTION)
         {
             await ConsoleExtensions.MarkupError(importedLinearProgram.Message);
