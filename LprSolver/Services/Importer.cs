@@ -36,7 +36,7 @@ public class Importer : IImporter
 
         var selected = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Select algorithm")
+                .Title("Select import location")
                 .AddChoices("Input path", "Default Source")
         );
 
