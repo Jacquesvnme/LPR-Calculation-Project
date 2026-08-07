@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddSingleton<IConfiguration>(configuration);
 
         // Main application logic services
+        services.AddScoped<IMenu, Menu>();
         services.AddScoped<IImporter, Importer>();
         services.AddScoped<ISolverSelection, SolverSelection>();
         services.AddScoped<IExporter, Exporter>();

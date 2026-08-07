@@ -10,8 +10,10 @@ namespace LprSolver.Services;
 
 public interface ISolverSelection
 {
-    Task<SolverAlgorithm> GetUserSelectedOption();
-    Task StartSolver(SolverAlgorithm solverAlgorithm, LinearProgram linearProgram);
+    Task<(bool IsSuccess, string Message, object? reportData)> StartSolver(
+        SolverAlgorithm solverAlgorithm,
+        LinearProgram linearProgram
+    );
 }
 
 public class SolverSelection : ISolverSelection
@@ -52,81 +54,51 @@ public class SolverSelection : ISolverSelection
     }
 
     /// <summary>
-    /// Gets the user-selected option
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
-    public async Task<SolverAlgorithm> GetUserSelectedOption()
-    {
-        var selected = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Select algorithm")
-                .AddChoices(
-                    "Primal Simplex",
-                    "Revised Primal Simplex",
-                    "Branch and Bound",
-                    "Revised Branch and Bound",
-                    "Cutting Plane",
-                    "Revised Cutting Plane",
-                    "Branch and Bound Knapsack",
-                    "Non Linear"
-                )
-        );
-
-        return selected switch
-        {
-            "Primal Simplex" => SolverAlgorithm.PrimalSimplex,
-            "Revised Primal Simplex" => SolverAlgorithm.Revised_PrimalSimplex,
-            "Branch and Bound" => SolverAlgorithm.BranchAndBound,
-            "Revised Branch and Bound" => SolverAlgorithm.Revised_BranchAndBound,
-            "Cutting Plane" => SolverAlgorithm.CuttingPlane,
-            "Revised Cutting Plane" => SolverAlgorithm.Revised_CuttingPlane,
-            "Branch and Bound Knapsack" => SolverAlgorithm.BranchAndBoundKnapsack,
-            "Non Linear" => SolverAlgorithm.NonLinearProblem,
-            _ => SolverAlgorithm.INVALID_OPTION,
-        };
-    }
-
-    /// <summary>
     /// Starts the solver based on the selected algorithm.
     /// </summary>
     /// <param name="solverAlgorithm"></param>
     /// <returns></returns>
-    public async Task StartSolver(SolverAlgorithm solverAlgorithm, LinearProgram linearProgram)
+    public async Task<(bool IsSuccess, string Message, object? reportData)> StartSolver(
+        SolverAlgorithm solverAlgorithm,
+        LinearProgram linearProgram
+    )
     {
         switch (solverAlgorithm)
         {
             case SolverAlgorithm.PrimalSimplex:
-                _primal_Simplex_Algorithm.Execute(linearProgram);
-                break;
+                var primal_simplex = await _primal_Simplex_Algorithm.Execute(linearProgram);
+                return (primal_simplex.Success, primal_simplex.Message, primal_simplex.Table);
 
             case SolverAlgorithm.Revised_PrimalSimplex:
                 _revised_Primal_Simplex_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Revised primal simplex completed.", null);
 
             case SolverAlgorithm.BranchAndBound:
                 _b_B_Simplex_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Branch and bound completed.", null);
 
             case SolverAlgorithm.Revised_BranchAndBound:
                 _revised_B_B_Simplex_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Revised branch and bound completed.", null);
 
             case SolverAlgorithm.CuttingPlane:
                 _cutting_Plane_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Cutting plane completed.", null);
 
             case SolverAlgorithm.Revised_CuttingPlane:
                 _revised_Cutting_Plane_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Revised cutting plane completed.", null);
 
             case SolverAlgorithm.BranchAndBoundKnapsack:
                 _b_B_Knapsack_Algorithm.Execute(linearProgram);
-                break;
+                return (true, "Branch and bound knapsack completed.", null);
 
             case SolverAlgorithm.NonLinearProblem:
                 _nonLinearProblem.Execute(linearProgram);
-                break;
+                return (true, "Non-linear problem solver completed.", null);
+
+            default:
+                return (false, "Unsupported solver algorithm.", null);
         }
     }
 }

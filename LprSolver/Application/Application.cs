@@ -1,4 +1,5 @@
 ﻿using LprSolver.Enums;
+using LprSolver.Models;
 using LprSolver.Services;
 using Spectre.Console;
 
@@ -12,12 +13,14 @@ public class Application
     private readonly IImporter _importer;
     private readonly ISolverSelection _solver;
     private readonly IExporter _exporter;
+    private readonly IMenu _menu;
 
     /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
-    public Application(IImporter importer, ISolverSelection solver, IExporter exporter)
+    public Application(IImporter importer, ISolverSelection solver, IExporter exporter, IMenu menu)
     {
+        _menu = menu;
         _importer = importer;
         _solver = solver;
         _exporter = exporter;
@@ -57,7 +60,7 @@ public class Application
     /// <returns></returns>
     private async Task StartSolverProcess()
     {
-        var importedFilePath = await _importer.DisplayImporterMenu();
+        var importedFilePath = await _menu.DisplaySourceMenu();
         if (!importedFilePath.IsSuccess)
         {
             await ConsoleExtensions.MarkupError(importedFilePath.Message);
@@ -87,9 +90,36 @@ public class Application
             return;
         }
 
-        await _solver.StartSolver(userSelectedOption, importedLinearProgram.LinearProgram);
+        await ConsoleExtensions.CompletedEvent("Algorithm selected...");
 
-        //exporter to be added
+        List<AlgorithmAnalysisOptions> algorithmOptions = await _menu.GetAlgorithmAnalysisOptions();
+        if (algorithmOptions.Contains(AlgorithmAnalysisOptions.INVALID_OPTION))
+        {
+            await ConsoleExtensions.CompletedEvent("No options selected");
+        }
+        else
+        {
+            await ConsoleExtensions.CompletedEvent(
+                $"{algorithmOptions.Count()} option(s) selected"
+            );
+        }
+
+        var solverResult = await _solver.StartSolver(
+            userSelectedOption,
+            importedLinearProgram.LinearProgram
+        );
+        if (!solverResult.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(solverResult.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
+
+        await ConsoleExtensions.CompletedEvent("Algorithm Solved...");
+
+        //var exportResult = await _exporter.ExportDataToTextFile();
+
+        await ConsoleExtensions.CompletedEvent("Algorithm Exported...");
 
         return;
     }
