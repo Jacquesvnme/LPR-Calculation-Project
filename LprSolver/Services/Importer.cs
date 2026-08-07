@@ -60,7 +60,7 @@ public class Importer : IImporter
 
                 return new(string.Empty, true, inputPath);
             case "Default Source":
-                var configurationPath = _configuration.GetSection("DataLocation");
+                var configurationPath = _configuration.GetSection("ImportLocation");
 
                 inputPath = ResolveExistingFilePath(configurationPath.Value);
                 if (inputPath == string.Empty)
