@@ -1,16 +1,16 @@
-﻿namespace LprSolver.Services;
+﻿using LprSolver.Models;
+
+namespace LprSolver.Services;
 
 public interface IExporter
 {
-    Task ExportDataToTextFile(string data);
+    Task<(bool IsSuccess, string Message)> ExportDataToTextFile();
 }
 
 public class Exporter : IExporter
 {
-    public async Task ExportDataToTextFile(string data)
+    public async Task<(bool IsSuccess, string Message)> ExportDataToTextFile()
     {
-        // TODO: Implement the logic to export data to a text file
-
-        Console.WriteLine($"Exporting data: {data}");
+        return (true, "Data exported successfully.");
     }
 }

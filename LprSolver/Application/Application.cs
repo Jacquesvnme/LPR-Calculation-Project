@@ -117,7 +117,13 @@ public class Application
 
         await ConsoleExtensions.CompletedEvent("Algorithm Solved...");
 
-        //var exportResult = await _exporter.ExportDataToTextFile();
+        var exportResult = await _exporter.ExportDataToTextFile();
+        if (!exportResult.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(exportResult.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
 
         await ConsoleExtensions.CompletedEvent("Algorithm Exported...");
 
