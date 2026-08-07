@@ -10,7 +10,7 @@ namespace LprSolver.Services;
 
 public interface ISolverSelection
 {
-    Task<(bool IsSuccess, string Message, object? reportData)> StartSolver(
+    Task<(bool IsSuccess, string Message, ExportReport exportReport)> StartSolver(
         SolverAlgorithm solverAlgorithm,
         LinearProgram linearProgram
     );
@@ -58,7 +58,7 @@ public class SolverSelection : ISolverSelection
     /// </summary>
     /// <param name="solverAlgorithm"></param>
     /// <returns></returns>
-    public async Task<(bool IsSuccess, string Message, object? reportData)> StartSolver(
+    public async Task<(bool IsSuccess, string Message, ExportReport exportReport)> StartSolver(
         SolverAlgorithm solverAlgorithm,
         LinearProgram linearProgram
     )
@@ -74,35 +74,35 @@ public class SolverSelection : ISolverSelection
                 );
 
             case SolverAlgorithm.Revised_PrimalSimplex:
-                _revised_Primal_Simplex_Algorithm.Execute(linearProgram);
-                return (true, "Revised primal simplex completed.", null);
+                await _revised_Primal_Simplex_Algorithm.Execute(linearProgram);
+                return new(true, "Revised primal simplex completed.", null);
 
             case SolverAlgorithm.BranchAndBound:
-                _b_B_Simplex_Algorithm.Execute(linearProgram);
-                return (true, "Branch and bound completed.", null);
+                await _b_B_Simplex_Algorithm.Execute(linearProgram);
+                return new(true, "Branch and bound completed.", null);
 
             case SolverAlgorithm.Revised_BranchAndBound:
-                _revised_B_B_Simplex_Algorithm.Execute(linearProgram);
-                return (true, "Revised branch and bound completed.", null);
+                await _revised_B_B_Simplex_Algorithm.Execute(linearProgram);
+                return new(true, "Revised branch and bound completed.", null);
 
             case SolverAlgorithm.CuttingPlane:
-                _cutting_Plane_Algorithm.Execute(linearProgram);
-                return (true, "Cutting plane completed.", null);
+                await _cutting_Plane_Algorithm.Execute(linearProgram);
+                return new(true, "Cutting plane completed.", null);
 
             case SolverAlgorithm.Revised_CuttingPlane:
-                _revised_Cutting_Plane_Algorithm.Execute(linearProgram);
-                return (true, "Revised cutting plane completed.", null);
+                await _revised_Cutting_Plane_Algorithm.Execute(linearProgram);
+                return new(true, "Revised cutting plane completed.", null);
 
             case SolverAlgorithm.BranchAndBoundKnapsack:
-                _b_B_Knapsack_Algorithm.Execute(linearProgram);
-                return (true, "Branch and bound knapsack completed.", null);
+                await _b_B_Knapsack_Algorithm.Execute(linearProgram);
+                return new(true, "Branch and bound knapsack completed.", null);
 
             case SolverAlgorithm.NonLinearProblem:
-                _nonLinearProblem.Execute(linearProgram);
-                return (true, "Non-linear problem solver completed.", null);
+                await _nonLinearProblem.Execute(linearProgram);
+                return new(true, "Non-linear problem solver completed.", null);
 
             default:
-                return (false, "Unsupported solver algorithm.", null);
+                return new(false, "Unsupported solver algorithm.", null);
         }
     }
 }
