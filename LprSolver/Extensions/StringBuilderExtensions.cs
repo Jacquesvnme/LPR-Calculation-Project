@@ -20,19 +20,29 @@ public static class StringBuilderExtensions
 
     public static StringBuilder AppendListLines(
         this StringBuilder builder,
-        IEnumerable<string> lines
+        IEnumerable<string> lines,
+        string customListSymbol = ""
     )
     {
         foreach (string line in lines)
         {
-            builder.AppendLine(line);
+            builder.AppendLine($"{customListSymbol}{line}");
         }
 
         return builder;
     }
 
-    public static StringBuilder AppendSessionInformation(this StringBuilder builder)
+    public static StringBuilder AppendEnums(
+        this StringBuilder builder,
+        List<Enum> enums,
+        string customListSymbol = ""
+    )
     {
+        foreach (var en in enums)
+        {
+            builder.AppendLine($"{customListSymbol}{en.ToString()}");
+        }
+
         return builder;
     }
 }
