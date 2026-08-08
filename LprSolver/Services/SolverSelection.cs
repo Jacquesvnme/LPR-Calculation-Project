@@ -74,63 +74,71 @@ public class SolverSelection : ISolverSelection
                 );
 
             case SolverAlgorithm.Revised_PrimalSimplex:
-                var revised_primal_simplex = await _revised_Primal_Simplex_Algorithm.Execute(linearProgram);
+                var revised_primal_simplex = await _revised_Primal_Simplex_Algorithm.Execute(
+                    linearProgram
+                );
                 return new(
-                     revised_primal_simplex.Success,
-                     revised_primal_simplex.Message,
-                     revised_primal_simplex.exportTableData
-                 );
+                    revised_primal_simplex.Success,
+                    revised_primal_simplex.Message,
+                    revised_primal_simplex.exportTableData
+                );
 
             case SolverAlgorithm.BranchAndBound:
                 var branch_and_bound = await _b_B_Simplex_Algorithm.Execute(linearProgram);
                 return new(
-                     branch_and_bound.Success,
-                     branch_and_bound.Message,
-                     branch_and_bound.exportTableData
-                 );
+                    branch_and_bound.Success,
+                    branch_and_bound.Message,
+                    branch_and_bound.exportTableData
+                );
 
             case SolverAlgorithm.Revised_BranchAndBound:
-                var revised_branch_and_bound = await _revised_B_B_Simplex_Algorithm.Execute(linearProgram);
+                var revised_branch_and_bound = await _revised_B_B_Simplex_Algorithm.Execute(
+                    linearProgram
+                );
                 return new(
-                     revised_branch_and_bound.Success,
-                     revised_branch_and_bound.Message,
-                     revised_branch_and_bound.exportTableData
-                 );
+                    revised_branch_and_bound.Success,
+                    revised_branch_and_bound.Message,
+                    revised_branch_and_bound.exportTableData
+                );
 
             case SolverAlgorithm.CuttingPlane:
                 var cutting_plane = await _cutting_Plane_Algorithm.Execute(linearProgram);
                 return new(
-                     cutting_plane.Success,
-                     cutting_plane.Message,
-                     cutting_plane.exportTableData
-                 );
+                    cutting_plane.Success,
+                    cutting_plane.Message,
+                    cutting_plane.exportTableData
+                );
 
             case SolverAlgorithm.Revised_CuttingPlane:
-                var revised_cutting_plane = await _revised_Cutting_Plane_Algorithm.Execute(linearProgram);
+                var revised_cutting_plane = await _revised_Cutting_Plane_Algorithm.Execute(
+                    linearProgram
+                );
                 return new(
-                     revised_cutting_plane.Success,
-                     revised_cutting_plane.Message,
-                     revised_cutting_plane.exportTableData
-                 );
+                    revised_cutting_plane.Success,
+                    revised_cutting_plane.Message,
+                    revised_cutting_plane.exportTableData
+                );
 
             case SolverAlgorithm.BranchAndBoundKnapsack:
-                var branch_and_bound_knapsack = await _b_B_Knapsack_Algorithm.Execute(linearProgram);
+                var branch_and_bound_knapsack = await _b_B_Knapsack_Algorithm.Execute(
+                    linearProgram
+                );
                 return new(
-                     branch_and_bound_knapsack.Success,
-                     branch_and_bound_knapsack.Message,
-                     branch_and_bound_knapsack.exportTableData
-                 );
+                    branch_and_bound_knapsack.Success,
+                    branch_and_bound_knapsack.Message,
+                    branch_and_bound_knapsack.exportTableData
+                );
 
             case SolverAlgorithm.NonLinearProblem:
                 var non_linear_problem = await _nonLinearProblem.Execute(linearProgram);
                 return new(
-                     non_linear_problem.Success,
-                     non_linear_problem.Message,
-                     non_linear_problem.exportTableData
-                 );
+                    non_linear_problem.Success,
+                    non_linear_problem.Message,
+                    non_linear_problem.exportTableData
+                );
 
             default:
-                return new(false, "Invalid solver algorithm",  null);
+                return new(false, "Invalid solver algorithm", null);
         }
     }
 }
