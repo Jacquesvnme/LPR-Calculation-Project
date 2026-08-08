@@ -42,10 +42,10 @@ public class Exporter : IExporter
                 .AppendLine($"Import File Path: {sessionDetails.ImportFilePath}")
                 .AppendLine($"Export File Path: {sessionDetails.ExportFilePath}")
                 .AppendLine($"Algorithm: {sessionDetails.SelectedAlgorithm.ToString()}")
-                .AppendLine("Algorithm Options")
+                .AppendLine("Algorithm Options:")
                 .AppendEnums(sessionDetails.AlgorithmOptions.Cast<Enum>().ToList(), "> ")
-                .AppendLine("Completed Events")
-                .AppendListLines(sessionDetails.CompletedEvents)
+                .AppendLine("Completed Events:")
+                .AppendListLines(sessionDetails.CompletedEvents, "> ")
                 .ToString();
 
             var text = new StringBuilder()
