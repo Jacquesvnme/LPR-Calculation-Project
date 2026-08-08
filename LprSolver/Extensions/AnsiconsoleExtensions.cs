@@ -21,7 +21,7 @@ public static class ConsoleExtensions
 
     public static async Task CompletedEvent(string Text)
     {
-        AnsiConsole.MarkupLine($"[blue]Info:[/] {Text}");
+        AnsiConsole.MarkupLine($"[blue]Info:[/] {Text}...");
         await Task.Delay(TimeSpan.FromSeconds(1));
     }
 
