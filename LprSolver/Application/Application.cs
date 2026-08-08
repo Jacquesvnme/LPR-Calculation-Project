@@ -60,7 +60,7 @@ public class Application
     /// <returns></returns>
     private async Task StartSolverProcess()
     {
-        var importedFilePath = await _menu.DisplaySourceMenu();
+        var importedFilePath = await _menu.DisplaySourceMenu(MenuType.Importer);
         if (!importedFilePath.IsSuccess)
         {
             await ConsoleExtensions.MarkupError(importedFilePath.Message);
@@ -117,7 +117,20 @@ public class Application
 
         await ConsoleExtensions.CompletedEvent("Algorithm Solved...");
 
-        var exportResult = await _exporter.ExportDataToTextFile(solverResult.exportReport);
+        var exportedFilePath = await _menu.DisplaySourceMenu(MenuType.Exporter);
+        if (!exportedFilePath.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(exportedFilePath.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
+
+        await ConsoleExtensions.CompletedEvent("Export path selected...");
+
+        var exportResult = await _exporter.ExportDataToTextFile(
+            solverResult.exportReport,
+            exportedFilePath.FilePath
+        );
         if (!exportResult.IsSuccess)
         {
             await ConsoleExtensions.MarkupError(exportResult.Message);
@@ -125,7 +138,7 @@ public class Application
             return;
         }
 
-        await ConsoleExtensions.CompletedEvent("Algorithm Exported...");
+        await ConsoleExtensions.CompletedEvent("Algorithm Data Exported...");
 
         return;
     }
