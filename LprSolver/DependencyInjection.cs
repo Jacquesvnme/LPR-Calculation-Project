@@ -20,6 +20,7 @@ public static class DependencyInjection
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
 
+        services.AddScoped<SessionInformation>();
         services.AddSingleton<IConfiguration>(configuration);
 
         // Main application logic services
