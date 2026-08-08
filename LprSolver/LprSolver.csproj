@@ -31,6 +31,9 @@
     <None Update="Data\Example.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Data\Solver-Export.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\linear-function-line-image.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
