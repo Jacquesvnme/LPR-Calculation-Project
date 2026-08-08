@@ -39,10 +39,10 @@ public class Revised_Cutting_Plane_Algorithm : IRevised_Cutting_Plane_Algorithm
 
         var exportReport = new ExportReport
         {
-            AdditionalData = new List<string>(),
-            ImportantDetails = new List<string>(),
-            SensitivityAnalysis = new List<string>(),
-            Tables = tables,
+            AdditionalData = new AdditionalData(),
+            ImportantDetails = new ImportantDetails(),
+            SensitivityAnalysis = new SensitivityAnalysis(),
+            Tables = new ExportTable { Tables = tables },
         };
 
         return new(true, "Dummy revised cutting plane table created successfully.", exportReport);

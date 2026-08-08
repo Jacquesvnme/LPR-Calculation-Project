@@ -39,10 +39,10 @@ public class Revised_Primal_Simplex_Algorithm : IRevised_Primal_Simplex_Algorith
 
         var exportReport = new ExportReport
         {
-            AdditionalData = new List<string>(),
-            ImportantDetails = new List<string>(),
-            SensitivityAnalysis = new List<string>(),
-            Tables = tables,
+            AdditionalData = new AdditionalData(),
+            ImportantDetails = new ImportantDetails(),
+            SensitivityAnalysis = new SensitivityAnalysis(),
+            Tables = new ExportTable { Tables = tables },
         };
 
         return new(true, "Dummy revised primal simplex table created successfully.", exportReport);

@@ -43,26 +43,14 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
 
-        var tables = new List<object>
-        {
-            new ExportTable
-            {
-                Title = "Primal Simplex Table",
-                Rows = new List<List<string>>
-                {
-                    new() { "Basic", "x1", "x2", "RHS" },
-                    new() { "s1", "1", "0", "4" },
-                    new() { "s2", "0", "1", "6" },
-                },
-            },
-        };
+        var tables = new List<object>();
 
         var exportReport = new ExportReport
         {
-            AdditionalData = new List<string>(),
-            ImportantDetails = new List<string>(),
-            SensitivityAnalysis = new List<string>(),
-            Tables = tables,
+            AdditionalData = new AdditionalData(),
+            ImportantDetails = new ImportantDetails(),
+            SensitivityAnalysis = new SensitivityAnalysis(),
+            Tables = new ExportTable { Tables = tables },
         };
 
         return new(true, "Dummy primal simplex table created successfully.", exportReport);

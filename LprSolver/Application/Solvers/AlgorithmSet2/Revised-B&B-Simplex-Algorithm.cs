@@ -39,10 +39,10 @@ public class Revised_B_B_Simplex_Algorithm : IRevised_B_B_Simplex_Algorithm
 
         var exportReport = new ExportReport
         {
-            AdditionalData = new List<string>(),
-            ImportantDetails = new List<string>(),
-            SensitivityAnalysis = new List<string>(),
-            Tables = tables,
+            AdditionalData = new AdditionalData(),
+            ImportantDetails = new ImportantDetails(),
+            SensitivityAnalysis = new SensitivityAnalysis(),
+            Tables = new ExportTable { Tables = tables },
         };
 
         return new(
