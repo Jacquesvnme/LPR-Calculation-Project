@@ -1,4 +1,5 @@
 ﻿using LprSolver.Enums;
+using LprSolver.Extensions;
 using LprSolver.Models;
 using LprSolver.Services;
 using Spectre.Console;
@@ -44,6 +45,7 @@ public class Application
 
             if (action == "Exit")
             {
+                Environment.Exit(0);
                 return;
             }
 
