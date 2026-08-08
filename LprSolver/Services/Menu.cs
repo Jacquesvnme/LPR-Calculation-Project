@@ -1,4 +1,5 @@
-﻿using LprSolver.Enums;
+﻿using System.Linq.Expressions;
+using LprSolver.Enums;
 using LprSolver.Models;
 using Microsoft.Extensions.Configuration;
 using Spectre.Console;
@@ -7,7 +8,7 @@ namespace LprSolver.Services;
 
 public interface IMenu
 {
-    Task<ImporterFilePathResponse> DisplaySourceMenu();
+    Task<ImporterFilePathResponse> DisplaySourceMenu(MenuType menuType);
     Task<List<AlgorithmAnalysisOptions>> GetAlgorithmAnalysisOptions();
     Task<SolverAlgorithm> GetUserSelectedOption();
 }
@@ -29,11 +30,22 @@ public class Menu : IMenu
     /// This method also does some basic validation.
     /// </summary>
     /// <returns></returns>
-    public async Task<ImporterFilePathResponse> DisplaySourceMenu()
+    public async Task<ImporterFilePathResponse> DisplaySourceMenu(MenuType menuType)
     {
+        var MenuText = string.Empty;
+        switch (menuType)
+        {
+            case MenuType.Exporter:
+                MenuText = "Export";
+                break;
+            case MenuType.Importer:
+                MenuText = "Import";
+                break;
+        }
+
         var selected = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Select import location")
+                .Title($"Select {MenuText} location")
                 .AddChoices("Input path", "Default Source")
         );
 
@@ -42,10 +54,11 @@ public class Menu : IMenu
         {
             case "Input path":
                 var path = AnsiConsole.Prompt(
-                    new TextPrompt<string>("[green]Input model path:[/] ").Validate(path =>
-                        string.IsNullOrWhiteSpace(path)
-                            ? ValidationResult.Error("A path is required.")
-                            : ValidationResult.Success()
+                    new TextPrompt<string>($"[green]Input {MenuText} absolute path:[/] ").Validate(
+                        path =>
+                            string.IsNullOrWhiteSpace(path)
+                                ? ValidationResult.Error("A path is required.")
+                                : ValidationResult.Success()
                     )
                 );
 
@@ -57,7 +70,7 @@ public class Menu : IMenu
 
                 return new(string.Empty, true, inputPath);
             case "Default Source":
-                var configurationPath = _configuration.GetSection("ImportLocation");
+                var configurationPath = _configuration.GetSection($"{MenuText}Location");
 
                 inputPath = ResolveExistingFilePath(configurationPath.Value);
                 if (inputPath == string.Empty)
