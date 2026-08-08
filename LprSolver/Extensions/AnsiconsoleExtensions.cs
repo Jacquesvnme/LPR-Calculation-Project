@@ -1,7 +1,7 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Extensions;
 
-namespace LprSolver.Services;
+namespace LprSolver.Extensions;
 
 public static class ConsoleExtensions
 {

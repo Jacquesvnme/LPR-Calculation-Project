@@ -30,4 +30,9 @@ public static class StringBuilderExtensions
 
         return builder;
     }
+
+    public static StringBuilder AppendSessionInformation(this StringBuilder builder)
+    {
+        return builder;
+    }
 }
