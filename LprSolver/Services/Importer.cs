@@ -12,67 +12,11 @@ public interface IImporter
     Task<(bool IsSuccess, string Message, LinearProgram? LinearProgram)> ImportDataFromTextFile(
         string absoluteFilePath
     );
-    Task<ImporterFilePathResponse> DisplayImporterMenu();
 }
 
 public class Importer : IImporter
 {
-    private readonly IConfiguration _configuration;
-
-    public Importer(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-
-    /// <summary>
-    /// This method displays a menu to the user for selecting an input path.
-    /// This method also does some basic validation.
-    /// </summary>
-    /// <returns></returns>
-    public async Task<ImporterFilePathResponse> DisplayImporterMenu()
-    {
-        await ConsoleExtensions.MarkupDefault("Importer Menu");
-        AnsiConsole.WriteLine("");
-
-        var selected = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Select algorithm")
-                .AddChoices("Input path", "Default Source")
-        );
-
-        string inputPath = string.Empty;
-        switch (selected)
-        {
-            case "Input path":
-                var path = AnsiConsole.Prompt(
-                    new TextPrompt<string>("[green]Input model path:[/] ").Validate(path =>
-                        string.IsNullOrWhiteSpace(path)
-                            ? ValidationResult.Error("A path is required.")
-                            : ValidationResult.Success()
-                    )
-                );
-
-                inputPath = ResolveExistingFilePath(path);
-                if (inputPath == string.Empty)
-                {
-                    return new("No source loaded", false, string.Empty);
-                }
-
-                return new(string.Empty, true, inputPath);
-            case "Default Source":
-                var configurationPath = _configuration.GetSection("DataLocation");
-
-                inputPath = ResolveExistingFilePath(configurationPath.Value);
-                if (inputPath == string.Empty)
-                {
-                    return new("No source loaded", false, string.Empty);
-                }
-
-                return new(string.Empty, true, inputPath);
-            default:
-                return new("No source loaded", false, string.Empty);
-        }
-    }
+    public Importer() { }
 
     /// <summary>
     /// This method reads the contents of a text file and attempts to parse it into a LinearProgram object.
@@ -426,30 +370,5 @@ public class Importer : IImporter
         }
 
         return (true, string.Empty);
-    }
-
-    /// <summary>
-    /// Checks if the provided input path is valid.
-    /// If the path is valid and the file exists, it returns the absolute path; otherwise, it returns an empty string.
-    /// </summary>
-    /// <param name="inputPath"></param>
-    /// <returns></returns>
-    private static string ResolveExistingFilePath(string? inputPath)
-    {
-        if (string.IsNullOrWhiteSpace(inputPath))
-        {
-            return string.Empty;
-        }
-
-        try
-        {
-            var absolutePath = Path.GetFullPath(inputPath.Trim(), AppContext.BaseDirectory);
-
-            return File.Exists(absolutePath) ? absolutePath : string.Empty;
-        }
-        catch (Exception)
-        {
-            return string.Empty;
-        }
     }
 }

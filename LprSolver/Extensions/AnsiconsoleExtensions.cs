@@ -1,7 +1,7 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Extensions;
 
-namespace LprSolver.Services;
+namespace LprSolver.Extensions;
 
 public static class ConsoleExtensions
 {
@@ -17,6 +17,12 @@ public static class ConsoleExtensions
         AnsiConsole.WriteLine("");
 
         return Task.CompletedTask;
+    }
+
+    public static async Task CompletedEvent(string Text)
+    {
+        AnsiConsole.MarkupLine($"[blue]Info:[/] {Text}...");
+        await Task.Delay(TimeSpan.FromSeconds(1));
     }
 
     public static Task MarkupDefault(string text)

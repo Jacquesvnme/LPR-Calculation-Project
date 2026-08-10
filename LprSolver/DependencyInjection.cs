@@ -20,9 +20,11 @@ public static class DependencyInjection
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
 
+        services.AddScoped<SessionInformation>();
         services.AddSingleton<IConfiguration>(configuration);
 
         // Main application logic services
+        services.AddScoped<IMenu, Menu>();
         services.AddScoped<IImporter, Importer>();
         services.AddScoped<ISolverSelection, SolverSelection>();
         services.AddScoped<IExporter, Exporter>();

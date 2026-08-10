@@ -7,7 +7,9 @@ namespace LprSolver.Application.Solvers.AlgorithmSet1;
 /// </summary>
 public interface IRevised_Primal_Simplex_Algorithm
 {
-    void Execute(LinearProgram linearProgram);
+    Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
+        LinearProgram linearProgram
+    );
 }
 
 public class Revised_Primal_Simplex_Algorithm : IRevised_Primal_Simplex_Algorithm
@@ -23,13 +25,27 @@ public class Revised_Primal_Simplex_Algorithm : IRevised_Primal_Simplex_Algorith
     /// <summary>
     /// Main method to execute the Algorithm.
     /// </summary>
-    public void Execute(LinearProgram linearProgram)
+    public async Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
+        LinearProgram linearProgram
+    )
     {
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
+
+        var tables = new List<object>();
+
+        var exportReport = new ExportReport
+        {
+            AdditionalData = new AdditionalData(),
+            ImportantDetails = new ImportantDetails(),
+            SensitivityAnalysis = new SensitivityAnalysis(),
+            Tables = new ExportTable { Tables = tables },
+        };
+
+        return new(true, "Dummy revised primal simplex table created successfully.", exportReport);
     }
 
     private void OtherMethods()

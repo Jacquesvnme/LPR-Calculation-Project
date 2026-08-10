@@ -1,4 +1,6 @@
 ﻿using LprSolver.Enums;
+using LprSolver.Extensions;
+using LprSolver.Models;
 using LprSolver.Services;
 using Spectre.Console;
 
@@ -12,12 +14,22 @@ public class Application
     private readonly IImporter _importer;
     private readonly ISolverSelection _solver;
     private readonly IExporter _exporter;
+    private readonly IMenu _menu;
+    private readonly SessionInformation _sessionInformation;
 
     /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
-    public Application(IImporter importer, ISolverSelection solver, IExporter exporter)
+    public Application(
+        IImporter importer,
+        ISolverSelection solver,
+        IExporter exporter,
+        IMenu menu,
+        SessionInformation sessionInformation
+    )
     {
+        _sessionInformation = sessionInformation;
+        _menu = menu;
         _importer = importer;
         _solver = solver;
         _exporter = exporter;
@@ -31,6 +43,7 @@ public class Application
     {
         while (true)
         {
+            await _sessionInformation.StartSession();
             await ConsoleExtensions.ResetConsole();
 
             var action = AnsiConsole.Prompt(
@@ -41,6 +54,7 @@ public class Application
 
             if (action == "Exit")
             {
+                Environment.Exit(0);
                 return;
             }
 
@@ -57,13 +71,17 @@ public class Application
     /// <returns></returns>
     private async Task StartSolverProcess()
     {
-        var importedFilePath = await _importer.DisplayImporterMenu();
+        var importedFilePath = await _menu.DisplaySourceMenu(MenuType.Importer);
         if (!importedFilePath.IsSuccess)
         {
             await ConsoleExtensions.MarkupError(importedFilePath.Message);
             await ConsoleExtensions.Sleep(3);
             return;
         }
+
+        await _sessionInformation.UpdateFilePath(MenuType.Importer, importedFilePath.FilePath);
+        await ConsoleExtensions.CompletedEvent("File imported successfully");
+        await _sessionInformation.AddCompletedEvent("File imported successfully");
 
         var importedLinearProgram = await _importer.ImportDataFromTextFile(
             importedFilePath.FilePath
@@ -75,7 +93,10 @@ public class Application
             return;
         }
 
-        SolverAlgorithm userSelectedOption = await _solver.GetUserSelectedOption();
+        await ConsoleExtensions.CompletedEvent("Data imported successfully");
+        await _sessionInformation.AddCompletedEvent("Data imported successfully");
+
+        SolverAlgorithm userSelectedOption = await _menu.GetUserSelectedOption();
         if (userSelectedOption == SolverAlgorithm.INVALID_OPTION)
         {
             await ConsoleExtensions.MarkupError(importedLinearProgram.Message);
@@ -83,9 +104,69 @@ public class Application
             return;
         }
 
-        await _solver.StartSolver(userSelectedOption, importedLinearProgram.LinearProgram);
+        await _sessionInformation.UpdateAlgorithmType(userSelectedOption);
+        await ConsoleExtensions.CompletedEvent("Algorithm selected");
+        await _sessionInformation.AddCompletedEvent("Algorithm selected");
 
-        //exporter to be added
+        List<AlgorithmAnalysisOptions> algorithmOptions = await _menu.GetAlgorithmAnalysisOptions();
+        if (algorithmOptions.Contains(AlgorithmAnalysisOptions.INVALID_OPTION))
+        {
+            await _sessionInformation.AddSelectedOptions(
+                new List<AlgorithmAnalysisOptions>() { AlgorithmAnalysisOptions.INVALID_OPTION }
+            );
+            await ConsoleExtensions.CompletedEvent("No options selected");
+            await _sessionInformation.AddCompletedEvent("No options selected");
+        }
+        else
+        {
+            await _sessionInformation.AddSelectedOptions(algorithmOptions);
+            await ConsoleExtensions.CompletedEvent(
+                $"{algorithmOptions.Count()} option(s) selected"
+            );
+            await _sessionInformation.AddCompletedEvent(
+                $"{algorithmOptions.Count()} option(s) selected"
+            );
+        }
+
+        var solverResult = await _solver.StartSolver(
+            userSelectedOption,
+            importedLinearProgram.LinearProgram
+        );
+        if (!solverResult.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(solverResult.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
+
+        await ConsoleExtensions.CompletedEvent("Algorithm Solved");
+        await _sessionInformation.AddCompletedEvent("Algorithm Solved");
+
+        var exportedFilePath = await _menu.DisplaySourceMenu(MenuType.Exporter);
+        if (!exportedFilePath.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(exportedFilePath.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
+
+        await _sessionInformation.UpdateFilePath(MenuType.Exporter, exportedFilePath.FilePath);
+        await ConsoleExtensions.CompletedEvent("Export path selected");
+        await _sessionInformation.AddCompletedEvent("Export path selected");
+
+        var exportResult = await _exporter.ExportDataToTextFile(
+            solverResult.exportReport,
+            exportedFilePath.FilePath
+        );
+        if (!exportResult.IsSuccess)
+        {
+            await ConsoleExtensions.MarkupError(exportResult.Message);
+            await ConsoleExtensions.Sleep(3);
+            return;
+        }
+
+        await ConsoleExtensions.CompletedEvent("Algorithm Data Exported");
+        await _sessionInformation.AddCompletedEvent("Algorithm Data Exported");
 
         return;
     }
