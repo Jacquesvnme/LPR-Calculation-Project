@@ -263,7 +263,8 @@ public static class PrimalSimplexUtils
             );
         }
 
-        // Floating-point calculations can produce tiny negative values that should be zero.
+        // Floating-point calculations can produce very tiny negative values.
+        // These very small values should just be 0.
         // The tolerance prevents those rounding errors from making the tableau appear infeasible.
         const double tolerance = 0.0000001;
         var rightHandSideColumnIndex = tableau.GetLength(1) - 1;
@@ -320,7 +321,8 @@ public static class PrimalSimplexUtils
             );
         }
 
-        // Floating-point calculations can produce tiny negative values that should be zero.
+        // Floating-point calculations can produce very tiny negative values.
+        // These very small values should just be 0.
         // The tolerance prevents those rounding errors from making the tableau appear infeasible.
         const double tolerance = 0.0000001;
         var pivotValue = tableau[pivotRowIndex, pivotColumnIndex];
