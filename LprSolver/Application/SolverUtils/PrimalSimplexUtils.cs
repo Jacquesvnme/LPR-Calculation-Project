@@ -248,6 +248,38 @@ public static class PrimalSimplexUtils
     }
 
     /// <summary>
+    /// Checks whether any constraint row has a negative right-hand-side value.
+    /// A negative RHS means the starting tableau is not primal feasible.
+    /// </summary>
+    public static bool HasNegativeRightHandSide(double[,] tableau)
+    {
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        if (tableau.GetLength(0) < 2 || tableau.GetLength(1) < 2)
+        {
+            throw new ArgumentException(
+                "The tableau must contain an objective row and at least one constraint row.",
+                nameof(tableau)
+            );
+        }
+
+        // Floating-point calculations can produce tiny negative values that should be zero.
+        // The tolerance prevents those rounding errors from making the tableau appear infeasible.
+        const double tolerance = 0.0000001;
+        var rightHandSideColumnIndex = tableau.GetLength(1) - 1;
+
+        for (var rowIndex = 1; rowIndex < tableau.GetLength(0); rowIndex++)
+        {
+            if (tableau[rowIndex, rightHandSideColumnIndex] < -tolerance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Returns back negative values for maximization problems and positive values for minimization problems.
     /// </summary>
     public static List<double> NormalizeObjective(
