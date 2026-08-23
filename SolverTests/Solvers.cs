@@ -46,13 +46,8 @@ public sealed class Solvers
     [TestMethod]
     public async Task PrimalSimplex()
     {
-        var importFilePath = _configuration["ImportLocation"];
-        var exportFilePath = _configuration["ExportLocation"];
-        Assert.IsFalse(string.IsNullOrWhiteSpace(importFilePath));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(exportFilePath));
-
-        var inputPath = Path.GetFullPath(importFilePath, AppContext.BaseDirectory);
-        var importResult = await _importer.ImportDataFromTextFile(inputPath);
+        var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
+        var importResult = await _importer.ImportDataFromTextFile(importFilePath);
 
         Assert.IsTrue(importResult.IsSuccess, importResult.Message);
         Assert.IsNotNull(importResult.LinearProgram);
@@ -69,7 +64,7 @@ public sealed class Solvers
             exportFilePath
         );
 
-        Assert.IsTrue(solverResult.IsSuccess, solverResult.Message);
+        Assert.IsTrue(exportResult.IsSuccess, exportResult.Message);
     }
 
     /// <summary>
@@ -81,4 +76,19 @@ public sealed class Solvers
     {
         throw new NotImplementedException("Still need to implement this");
     }
+
+    #region Utility Methods
+    private async Task<(string ImportFilePath, string ExportFilePath)> GetAbsoluteFilePaths()
+    {
+        var importFilePath = _configuration["ImportLocation"];
+        var exportFilePath = _configuration["ExportLocation"];
+        Assert.IsFalse(string.IsNullOrWhiteSpace(importFilePath));
+        Assert.IsFalse(string.IsNullOrWhiteSpace(exportFilePath));
+
+        var inputPath = Path.GetFullPath(importFilePath, AppContext.BaseDirectory);
+        var exportPath = Path.GetFullPath(exportFilePath, AppContext.BaseDirectory);
+
+        return (inputPath, exportPath);
+    }
+    #endregion
 }
