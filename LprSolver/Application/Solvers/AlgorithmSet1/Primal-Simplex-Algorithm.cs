@@ -1,4 +1,5 @@
 ﻿using LprSolver.Application.SolverUtils;
+using LprSolver.Enums;
 using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet1;
@@ -41,14 +42,37 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
     /// <returns></returns>
     private async Task SolvePrimalSimplex(LinearProgram linearProgram)
     {
-        var normalizedValues = PrimalSimplexUtils.NormalizeObjective(linearProgram.Objective.);
+        if (linearProgram == null)
+        {
+            throw new ArgumentNullException(
+                nameof(linearProgram),
+                "Linear program cannot be null."
+            );
+        }
+
+        var workingCopy = linearProgram.DeepCopy();
+
+        if (workingCopy.Objective.Direction == OptimizationDirection.Maximize)
+        {
+            workingCopy.Objective.Objectives = PrimalSimplexUtils.NormalizeObjective(
+                workingCopy.Objective.Objectives,
+                workingCopy.Objective.Direction
+            );
+        }
+
+        var slackOrExcessResult = PrimalSimplexUtils.AddSlackOrExcess(workingCopy.Constraints);
+        workingCopy.Constraints = slackOrExcessResult.Constraints;
     }
 
     /// <summary>
     /// Exports the results of the primal simplex algorithm into an ExportReport object.
     /// </summary>
     /// <returns></returns>
-    private async Task<(bool Success, string Message, ExportReport exportTableData)> ExportPrimalSimplex()
+    private async Task<(
+        bool Success,
+        string Message,
+        ExportReport exportTableData
+    )> ExportPrimalSimplex()
     {
         var tables = new List<object>();
 
