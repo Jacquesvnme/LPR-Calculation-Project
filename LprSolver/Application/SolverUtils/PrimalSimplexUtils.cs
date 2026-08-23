@@ -257,4 +257,71 @@ public static class PrimalSimplexUtils
 
         return values.Select(value => value * multiplier).ToList();
     }
+
+    /// <summary>
+    /// Creates the initial tableau in a format that is easier to manipulate
+    /// </summary>
+    public static double[,] BuildInitialTableau(LinearProgram workingCopy)
+    {
+        workingCopy = GetRequiredInformation(workingCopy);
+
+        // Number of rows + z row
+        var rowCount = workingCopy.Constraints.Count + 1;
+
+        // Number of columns + RHS
+        var columnCount = workingCopy.Constraints[0].Coefficients.Count + 1;
+
+        // Width x Height
+        double[,] tableau = new double[rowCount, columnCount];
+        var rightHandSideColumnIndex = columnCount - 1;
+
+        // Adds the objectives and then 0 for all other values
+        for (var columnIndex = 0; columnIndex < rightHandSideColumnIndex; columnIndex++)
+        {
+            if (columnIndex < workingCopy.Objective.Objectives.Count)
+            {
+                tableau[0, columnIndex] = workingCopy.Objective.Objectives[columnIndex];
+            }
+            else
+            {
+                tableau[0, columnIndex] = 0.0;
+            }
+        }
+
+        // Add the constraints
+        for (var rowIndex = 1; rowIndex < rowCount; rowIndex++)
+        {
+            // Constraint zero maps to tableau row one, constraint one to row two, and so on.
+            var constraint = workingCopy.Constraints[rowIndex - 1];
+
+            for (var columnIndex = 0; columnIndex < constraint.Coefficients.Count; columnIndex++)
+            {
+                tableau[rowIndex, columnIndex] = constraint.Coefficients[columnIndex];
+            }
+
+            // The RHS is stored separately on the constraint and belongs in the final column.
+            tableau[rowIndex, rightHandSideColumnIndex] = constraint.RightHandSide;
+        }
+
+        return tableau;
+    }
+
+    /// <summary>
+    /// Calls the normalization and slack/excess methods to prepare the working copy
+    /// </summary>
+    private static LinearProgram GetRequiredInformation(LinearProgram workingCopy)
+    {
+        if (workingCopy.Objective.Direction == OptimizationDirection.Maximize)
+        {
+            workingCopy.Objective.Objectives = PrimalSimplexUtils.NormalizeObjective(
+                workingCopy.Objective.Objectives,
+                workingCopy.Objective.Direction
+            );
+        }
+
+        var slackOrExcessResult = PrimalSimplexUtils.AddSlackOrExcess(workingCopy.Constraints);
+        workingCopy.Constraints = slackOrExcessResult.Constraints;
+
+        return workingCopy;
+    }
 }

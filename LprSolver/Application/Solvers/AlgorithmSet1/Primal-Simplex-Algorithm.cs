@@ -1,5 +1,4 @@
 ﻿using LprSolver.Application.SolverUtils;
-using LprSolver.Enums;
 using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet1;
@@ -51,25 +50,42 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         }
 
         var workingCopy = linearProgram.DeepCopy();
+        var initialTableau = PrimalSimplexUtils.BuildInitialTableau(workingCopy);
 
-        if (workingCopy.Objective.Direction == OptimizationDirection.Maximize)
+        // Main solving loop
+        var counter = 0;
+        var tables = new List<double[,]>();
+        while (true)
         {
-            workingCopy.Objective.Objectives = PrimalSimplexUtils.NormalizeObjective(
-                workingCopy.Objective.Objectives,
-                workingCopy.Objective.Direction
+            var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(
+                workingCopy.Objective.Objectives
             );
+            if (pivotColumnIndex == -1)
+            {
+                // No negative values remain in row zero.
+                // The current solution is optimal.
+                break;
+            }
+
+            var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(
+                workingCopy.Constraints,
+                pivotColumnIndex
+            );
+            if (pivotRowIndex == -1)
+            {
+                // No positive entry exists in the pivot column.
+                // The problem is unbounded.
+                break;
+            }
+
+            counter++;
+            var table = PrimalSimplexUtils.Pivot(
+                workingCopy.Constraints,
+                pivotRowIndex,
+                pivotColumnIndex
+            );
+            tables.Add(table);
         }
-
-        var slackOrExcessResult = PrimalSimplexUtils.AddSlackOrExcess(workingCopy.Constraints);
-        workingCopy.Constraints = slackOrExcessResult.Constraints;
-
-        // Get pivot column and row index's
-        var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(workingCopy.Objective.Objectives);
-        var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(
-            workingCopy.Constraints,
-            pivotColumnIndex
-        );
-
     }
 
     /// <summary>
