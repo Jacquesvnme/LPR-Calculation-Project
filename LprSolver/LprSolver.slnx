@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../SolverTests/SolverTests.csproj" Id="f89f8500-b015-4bc7-ad73-7710a06146e0" />
   <Project Path="LprSolver.csproj" />
 </Solution>
