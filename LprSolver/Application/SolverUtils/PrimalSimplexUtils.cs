@@ -258,6 +258,16 @@ public static class PrimalSimplexUtils
         return values.Select(value => value * multiplier).ToList();
     }
 
+    public static double[,] Pivot(
+        List<Constraint> constraints,
+        int pivotRowIndex,
+        int pivotColumnIndex
+    )
+    {
+        // Replace
+        return null;
+    }
+
     /// <summary>
     /// Creates the initial tableau in a format that is easier to manipulate
     /// </summary>
