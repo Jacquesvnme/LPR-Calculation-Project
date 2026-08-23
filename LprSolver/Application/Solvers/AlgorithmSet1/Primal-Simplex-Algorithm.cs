@@ -1,4 +1,5 @@
-﻿using LprSolver.Models;
+﻿using LprSolver.Application.SolverUtils;
+using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet1;
 
@@ -29,12 +30,26 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         LinearProgram linearProgram
     )
     {
-        // Add code here to implement the Algorithm.
-        // Keep in mind that the return data should match the expected output format for the application.
+        await SolvePrimalSimplex(linearProgram);
 
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
+        return await ExportPrimalSimplex();
+    }
 
+    /// <summary>
+    /// Solves the linear program using the primal simplex algorithm.
+    /// </summary>
+    /// <returns></returns>
+    private async Task SolvePrimalSimplex(LinearProgram linearProgram)
+    {
+        var normalizedValues = PrimalSimplexUtils.NormalizeObjective(linearProgram.Objective.);
+    }
+
+    /// <summary>
+    /// Exports the results of the primal simplex algorithm into an ExportReport object.
+    /// </summary>
+    /// <returns></returns>
+    private async Task<(bool Success, string Message, ExportReport exportTableData)> ExportPrimalSimplex()
+    {
         var tables = new List<object>();
 
         var exportReport = new ExportReport
@@ -46,10 +61,5 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         };
 
         return new(true, "Dummy primal simplex table created successfully.", exportReport);
-    }
-
-    private void OtherMethods()
-    {
-        //dummy method
     }
 }
