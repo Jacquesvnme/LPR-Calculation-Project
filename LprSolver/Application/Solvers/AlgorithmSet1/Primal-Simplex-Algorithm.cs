@@ -87,22 +87,121 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
     /// Exports the results of the primal simplex algorithm into an ExportReport object.
     /// </summary>
     /// <returns></returns>
-    private async Task<(
-        bool Success,
-        string Message,
-        ExportReport exportTableData
-    )> ExportPrimalSimplex()
+    private Task<(bool Success, string Message, ExportReport exportTableData)> ExportPrimalSimplex(
+        List<double[,]> simplexTables,
+        List<int> pivotColumns,
+        List<int> pivotRows,
+        List<string> columnNames
+    )
     {
-        var tables = new List<object>();
+        ArgumentNullException.ThrowIfNull(simplexTables);
+        ArgumentNullException.ThrowIfNull(pivotColumns);
+        ArgumentNullException.ThrowIfNull(pivotRows);
+        ArgumentNullException.ThrowIfNull(columnNames);
 
         var exportReport = new ExportReport
         {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables },
+            AdditionalData = Export_AdditionalData(pivotColumns, pivotRows, columnNames),
+            ImportantDetails = Export_ImportantDetails(pivotColumns, pivotRows, columnNames),
+            SensitivityAnalysis = Export_SensitivityAnalysis(),
+            Tables = Export_ExportTable(simplexTables, columnNames),
         };
 
-        return new(true, "Dummy primal simplex table created successfully.", exportReport);
+        return Task.FromResult((true, "Primal simplex tables created successfully.", exportReport));
+    }
+
+    private AdditionalData Export_AdditionalData(
+        List<int> pivotColumns,
+        List<int> pivotRows,
+        List<string> columnNames
+    )
+    {
+        var additionalData = new AdditionalData
+        {
+            Title = "Additional Data for Primal Simplex Solver"
+        };
+
+        additionalData.Rows.Add($"Total Columns: {pivotColumns.Count}");
+        additionalData.Rows.Add($"Total Rows: {pivotRows.Count}");
+
+        var columns = "";
+        foreach (var column in pivotColumns)
+        {
+            columns += $"{columnNames[column]} (Index: {column}), ";
+        }
+        additionalData.Rows.Add(columns);
+
+        return additionalData;
+    }
+
+    private ImportantDetails Export_ImportantDetails(
+        List<int> pivotColumns,
+        List<int> pivotRows,
+        List<string> columnNames
+    )
+    {
+        var importantDetails = new ImportantDetails
+        {
+            Title = "Important Details for Primal Simplex Solver",
+        };
+
+        for (int i = 0; i < pivotColumns.Count; i++)
+        {
+            var pivotColumn = pivotColumns[i];
+            var pivotRow = pivotRows[i];
+            var columnName = columnNames[pivotColumn];
+            importantDetails.Rows.Add(
+                $"Iteration {i + 1}: Pivot Column = {columnName} (Index: {pivotColumn}), Pivot Row = {pivotRow}"
+            );
+        }
+
+        return importantDetails;
+    }
+
+    private SensitivityAnalysis Export_SensitivityAnalysis()
+    {
+        var sensitivityAnalysis = new SensitivityAnalysis
+        {
+            Title = "Sensitivity Analysis for Primal Simplex Solver",
+            Rows = new List<string>()
+            {
+                "None available"
+            },
+        };
+
+        return sensitivityAnalysis;
+    }
+
+    private ExportTable Export_ExportTable(List<double[,]> simplexTables, List<string> columnNames)
+    {
+        var result = new ExportTable { Title = "Export Tables for Primal Simplex Solver" };
+
+        for (var tableIndex = 0; tableIndex < simplexTables.Count; tableIndex++)
+        {
+            var table = simplexTables[tableIndex];
+            var rows = new List<List<string>>();
+
+            var headings = new List<string> { "Row" };
+            headings.AddRange(columnNames);
+            headings.Add("RHS");
+            rows.Add(headings);
+
+            for (var row = 0; row < table.GetLength(0); row++)
+            {
+                var values = new List<string> { row.ToString() };
+
+                for (var column = 0; column < table.GetLength(1); column++)
+                {
+                    values.Add(table[row, column].ToString("0.##", CultureInfo.InvariantCulture));
+                }
+
+                rows.Add(values);
+            }
+
+            result.Tables.Add(tableIndex == 0 ? "Table 0 (Initial)" : $"\nTable {tableIndex}");
+            result.Tables.Add(rows);
+        }
+
+        return result;
     }
 }
