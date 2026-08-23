@@ -266,7 +266,7 @@ public static class PrimalSimplexUtils
     }
 
     public static double[,] Pivot(
-        List<Constraint> constraints,
+        double[,] table,
         int pivotRowIndex,
         int pivotColumnIndex
     )

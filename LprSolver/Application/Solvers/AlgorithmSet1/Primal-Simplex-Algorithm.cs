@@ -75,7 +75,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
 
             counter++;
             var table = PrimalSimplexUtils.Pivot(
-                workingCopy.Constraints,
+                initialTableau,
                 pivotRowIndex,
                 pivotColumnIndex
             );
