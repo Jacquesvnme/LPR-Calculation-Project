@@ -1,4 +1,5 @@
-﻿using LprSolver.Application.SolverUtils;
+﻿using System.Globalization;
+using LprSolver.Application.SolverUtils;
 using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet1;
@@ -30,16 +31,23 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         LinearProgram linearProgram
     )
     {
-        await SolvePrimalSimplex(linearProgram);
+        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolvePrimalSimplex(
+            linearProgram
+        );
 
-        return await ExportPrimalSimplex();
+        return await ExportPrimalSimplex(simplexTables, pivotColumns, pivotRows, columnNames);
     }
 
     /// <summary>
     /// Solves the linear program using the primal simplex algorithm.
     /// </summary>
     /// <returns></returns>
-    private async Task SolvePrimalSimplex(LinearProgram linearProgram)
+    private (
+        List<double[,]> Tables,
+        List<int> PivotColumns,
+        List<int> PivotRows,
+        List<string> ColumnNames
+    ) SolvePrimalSimplex(LinearProgram linearProgram)
     {
         if (linearProgram == null)
         {
@@ -49,15 +57,31 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
             );
         }
 
-        var workingCopy = linearProgram.DeepCopy();
-        var initialTableau = PrimalSimplexUtils.BuildInitialTableau(workingCopy);
+        var (currentTableau, columnNames) = PrimalSimplexUtils.BuildInitialTableau(
+            linearProgram.DeepCopy()
+        );
+
+        if (PrimalSimplexUtils.HasNegativeRightHandSide(currentTableau))
+        {
+            throw new InvalidOperationException(
+                "The initial tableau has a negative RHS and requires preprocessing or Phase I."
+            );
+        }
 
         // Main solving loop
-        var counter = 0;
-        var tables = new List<double[,]>();
+        const int maximumIterations = 1000;
+        var iteration = 0;
+        var tables = new List<double[,]>
+        {
+            (double[,])currentTableau.Clone(),
+        };
+
+        List<int> pivotRows = new();
+        List<int> pivotColumns = new();
+
         while (true)
         {
-            var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(initialTableau);
+            var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(currentTableau);
             if (pivotColumnIndex == -1)
             {
                 // No negative values remain in row zero.
@@ -65,22 +89,38 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
                 break;
             }
 
-            var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(initialTableau, pivotColumnIndex);
+            if (iteration >= maximumIterations)
+            {
+                // Infeasible solution
+
+                throw new InvalidOperationException(
+                    $"The primal simplex algorithm exceeded {maximumIterations} iterations."
+                );
+            }
+
+            var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(currentTableau, pivotColumnIndex);
             if (pivotRowIndex == -1)
             {
                 // No positive entry exists in the pivot column.
                 // The problem is unbounded.
-                break;
+                throw new InvalidOperationException(
+                    "The linear program is unbounded because no valid pivot row was found."
+                );
             }
 
-            counter++;
-            var table = PrimalSimplexUtils.Pivot(
-                initialTableau,
+            pivotColumns.Add(pivotColumnIndex);
+            pivotRows.Add(pivotRowIndex);
+
+            currentTableau = PrimalSimplexUtils.Pivot(
+                currentTableau,
                 pivotRowIndex,
                 pivotColumnIndex
             );
-            tables.Add(table);
+            tables.Add((double[,])currentTableau.Clone());
+            iteration++;
         }
+
+        return new(tables, pivotColumns, pivotRows, columnNames);
     }
 
     /// <summary>
