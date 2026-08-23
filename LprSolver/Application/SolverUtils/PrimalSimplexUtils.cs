@@ -310,9 +310,11 @@ public static class PrimalSimplexUtils
     /// <summary>
     /// Creates the initial tableau in a format that is easier to manipulate
     /// </summary>
-    public static double[,] BuildInitialTableau(LinearProgram workingCopy)
+    public static (double[,] tableau, List<string> columnNames) BuildInitialTableau(
+        LinearProgram workingCopy
+    )
     {
-        workingCopy = GetRequiredInformation(workingCopy);
+        (workingCopy, var columnNames) = GetRequiredInformation(workingCopy);
 
         // Number of rows + z row
         var rowCount = workingCopy.Constraints.Count + 1;
@@ -352,13 +354,15 @@ public static class PrimalSimplexUtils
             tableau[rowIndex, rightHandSideColumnIndex] = constraint.RightHandSide;
         }
 
-        return tableau;
+        return new(tableau, columnNames);
     }
 
     /// <summary>
     /// Calls the normalization and slack/excess methods to prepare the working copy
     /// </summary>
-    private static LinearProgram GetRequiredInformation(LinearProgram workingCopy)
+    private static (LinearProgram workingCopy, List<string> columnNames) GetRequiredInformation(
+        LinearProgram workingCopy
+    )
     {
         if (workingCopy.Objective.Direction == OptimizationDirection.Maximize)
         {
@@ -371,6 +375,6 @@ public static class PrimalSimplexUtils
         var slackOrExcessResult = PrimalSimplexUtils.AddSlackOrExcess(workingCopy.Constraints);
         workingCopy.Constraints = slackOrExcessResult.Constraints;
 
-        return workingCopy;
+        return new(workingCopy, slackOrExcessResult.ColumnNames);
     }
 }
