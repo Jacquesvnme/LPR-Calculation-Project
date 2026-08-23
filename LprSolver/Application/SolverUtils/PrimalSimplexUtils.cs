@@ -162,64 +162,70 @@ public static class PrimalSimplexUtils
     /// Finds the index of the most negative coefficient in the normalized objective row.
     /// Returns -1 when no negative coefficient remains and the current tableau is optimal.
     /// </summary>
-    public static int FindPivotColumn(List<double> objectiveCoefficients)
+    public static int FindPivotColumn(double[,] tableau)
     {
-        if (objectiveCoefficients is null || objectiveCoefficients.Count == 0)
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        if (tableau.GetLength(0) == 0 || tableau.GetLength(1) < 2)
         {
             throw new ArgumentException(
-                "Objective coefficients cannot be null or empty.",
-                nameof(objectiveCoefficients)
+                "The tableau must contain an objective row and at least one value column.",
+                nameof(tableau)
             );
         }
 
-        var minimumValue = objectiveCoefficients.Min();
+        var pivotColumnIndex = -1;
+        var mostNegativeValue = 0.0;
 
-        if (minimumValue >= 0.0)
+        // Row zero is the objective row. The final RHS column is not a pivot candidate.
+        for (var columnIndex = 0; columnIndex < tableau.GetLength(1) - 1; columnIndex++)
         {
-            return -1;
+            var currentValue = tableau[0, columnIndex];
+
+            // Using < keeps the left-most column when values are tied.
+            if (currentValue < mostNegativeValue)
+            {
+                mostNegativeValue = currentValue;
+                pivotColumnIndex = columnIndex;
+            }
         }
 
-        return objectiveCoefficients.IndexOf(minimumValue);
+        return pivotColumnIndex;
     }
 
     /// <summary>
     /// Finds the constraint row with the smallest non-negative RHS-to-column ratio.
     /// Returns -1 when the pivot column has no valid positive entry, meaning unboundedness.
     /// </summary>
-    public static int FindPivotRow(List<Constraint> constraints, int pivotColumnIndex)
+    public static int FindPivotRow(double[,] tableau, int pivotColumnIndex)
     {
-        if (constraints is null || constraints.Count == 0)
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        if (tableau.GetLength(0) < 2 || tableau.GetLength(1) < 2)
         {
             throw new ArgumentException(
-                "Constraints cannot be null or empty.",
-                nameof(constraints)
+                "The tableau must contain an objective row and at least one constraint row.",
+                nameof(tableau)
             );
         }
 
-        if (pivotColumnIndex < 0)
+        var rightHandSideColumnIndex = tableau.GetLength(1) - 1;
+
+        if (pivotColumnIndex < 0 || pivotColumnIndex >= rightHandSideColumnIndex)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(pivotColumnIndex),
-                "The pivot column index cannot be negative."
+                "The pivot column must refer to a value column before the RHS."
             );
         }
 
         var pivotRowIndex = -1;
         var smallestRatio = double.PositiveInfinity;
 
-        for (var rowIndex = 0; rowIndex < constraints.Count; rowIndex++)
+        // Constraint rows begin at row one because row zero contains the objective.
+        for (var rowIndex = 1; rowIndex < tableau.GetLength(0); rowIndex++)
         {
-            var currentConstraint = constraints[rowIndex];
-
-            if (pivotColumnIndex >= currentConstraint.Coefficients.Count)
-            {
-                throw new ArgumentException(
-                    "The pivot column does not exist in every constraint.",
-                    nameof(pivotColumnIndex)
-                );
-            }
-
-            var pivotColumnValue = currentConstraint.Coefficients[pivotColumnIndex];
+            var pivotColumnValue = tableau[rowIndex, pivotColumnIndex];
 
             // Zero and negative column values cannot participate in the minimum-ratio test.
             if (pivotColumnValue <= 0.0)
@@ -227,7 +233,8 @@ public static class PrimalSimplexUtils
                 continue;
             }
 
-            var ratio = currentConstraint.RightHandSide / pivotColumnValue;
+            var rightHandSide = tableau[rowIndex, rightHandSideColumnIndex];
+            var ratio = rightHandSide / pivotColumnValue;
 
             // Using < keeps the first valid row when two ratios are equal.
             if (ratio >= 0.0 && ratio < smallestRatio)

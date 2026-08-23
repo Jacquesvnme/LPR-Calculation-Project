@@ -57,9 +57,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         var tables = new List<double[,]>();
         while (true)
         {
-            var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(
-                workingCopy.Objective.Objectives
-            );
+            var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(initialTableau);
             if (pivotColumnIndex == -1)
             {
                 // No negative values remain in row zero.
@@ -67,10 +65,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
                 break;
             }
 
-            var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(
-                workingCopy.Constraints,
-                pivotColumnIndex
-            );
+            var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(initialTableau, pivotColumnIndex);
             if (pivotRowIndex == -1)
             {
                 // No positive entry exists in the pivot column.
