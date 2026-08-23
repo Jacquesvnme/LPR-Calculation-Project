@@ -158,8 +158,88 @@ public static class PrimalSimplexUtils
         return columnNames;
     }
 
+    /// <summary>
+    /// Finds the index of the most negative coefficient in the normalized objective row.
+    /// Returns -1 when no negative coefficient remains and the current tableau is optimal.
+    /// </summary>
+    public static int FindPivotColumn(List<double> objectiveCoefficients)
     {
-        if (values == null || values.Count == 0)
+        if (objectiveCoefficients is null || objectiveCoefficients.Count == 0)
+        {
+            throw new ArgumentException(
+                "Objective coefficients cannot be null or empty.",
+                nameof(objectiveCoefficients)
+            );
+        }
+
+        var minimumValue = objectiveCoefficients.Min();
+
+        if (minimumValue >= 0.0)
+        {
+            return -1;
+        }
+
+        return objectiveCoefficients.IndexOf(minimumValue);
+    }
+
+    /// <summary>
+    /// Finds the constraint row with the smallest non-negative RHS-to-column ratio.
+    /// Returns -1 when the pivot column has no valid positive entry, meaning unboundedness.
+    /// </summary>
+    public static int FindPivotRow(List<Constraint> constraints, int pivotColumnIndex)
+    {
+        if (constraints is null || constraints.Count == 0)
+        {
+            throw new ArgumentException(
+                "Constraints cannot be null or empty.",
+                nameof(constraints)
+            );
+        }
+
+        if (pivotColumnIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pivotColumnIndex),
+                "The pivot column index cannot be negative."
+            );
+        }
+
+        var pivotRowIndex = -1;
+        var smallestRatio = double.PositiveInfinity;
+
+        for (var rowIndex = 0; rowIndex < constraints.Count; rowIndex++)
+        {
+            var currentConstraint = constraints[rowIndex];
+
+            if (pivotColumnIndex >= currentConstraint.Coefficients.Count)
+            {
+                throw new ArgumentException(
+                    "The pivot column does not exist in every constraint.",
+                    nameof(pivotColumnIndex)
+                );
+            }
+
+            var pivotColumnValue = currentConstraint.Coefficients[pivotColumnIndex];
+
+            // Zero and negative column values cannot participate in the minimum-ratio test.
+            if (pivotColumnValue <= 0.0)
+            {
+                continue;
+            }
+
+            var ratio = currentConstraint.RightHandSide / pivotColumnValue;
+
+            // Using < keeps the first valid row when two ratios are equal.
+            if (ratio >= 0.0 && ratio < smallestRatio)
+            {
+                smallestRatio = ratio;
+                pivotRowIndex = rowIndex;
+            }
+        }
+
+        return pivotRowIndex;
+    }
+
     /// <summary>
     /// Returns back negative values for maximization problems and positive values for minimization problems.
     /// </summary>

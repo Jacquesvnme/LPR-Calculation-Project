@@ -62,6 +62,14 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
 
         var slackOrExcessResult = PrimalSimplexUtils.AddSlackOrExcess(workingCopy.Constraints);
         workingCopy.Constraints = slackOrExcessResult.Constraints;
+
+        // Get pivot column and row index's
+        var pivotColumnIndex = PrimalSimplexUtils.FindPivotColumn(workingCopy.Objective.Objectives);
+        var pivotRowIndex = PrimalSimplexUtils.FindPivotRow(
+            workingCopy.Constraints,
+            pivotColumnIndex
+        );
+
     }
 
     /// <summary>
