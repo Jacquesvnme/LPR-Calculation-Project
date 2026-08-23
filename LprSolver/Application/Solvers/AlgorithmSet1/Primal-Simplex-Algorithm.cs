@@ -15,14 +15,6 @@ public interface IPrimal_Simplex_Algorithm
 public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
 {
     /// <summary>
-    /// Represents the tabular output of the primal simplex algorithm.
-    /// </summary>
-    public class SimplexTable
-    {
-        public List<List<string>> Rows { get; set; } = new();
-    }
-
-    /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
     public Primal_Simplex_Algorithm()
