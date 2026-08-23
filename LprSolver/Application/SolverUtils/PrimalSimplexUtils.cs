@@ -297,14 +297,78 @@ public static class PrimalSimplexUtils
         return values.Select(value => value * multiplier).ToList();
     }
 
-    public static double[,] Pivot(
-        double[,] table,
-        int pivotRowIndex,
-        int pivotColumnIndex
-    )
+    public static double[,] Pivot(double[,] tableau, int pivotRowIndex, int pivotColumnIndex)
     {
-        // Replace
-        return null;
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        var rowCount = tableau.GetLength(0);
+        var columnCount = tableau.GetLength(1);
+
+        if (pivotRowIndex <= 0 || pivotRowIndex >= rowCount)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pivotRowIndex),
+                "The pivot row must refer to a constraint row in the tableau."
+            );
+        }
+
+        if (pivotColumnIndex < 0 || pivotColumnIndex >= columnCount - 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pivotColumnIndex),
+                "The pivot column must refer to a value column before the RHS."
+            );
+        }
+
+        // Floating-point calculations can produce tiny negative values that should be zero.
+        // The tolerance prevents those rounding errors from making the tableau appear infeasible.
+        const double tolerance = 0.0000001;
+        var pivotValue = tableau[pivotRowIndex, pivotColumnIndex];
+
+        if (Math.Abs(pivotValue) < tolerance)
+        {
+            throw new InvalidOperationException("The pivot value cannot be zero.");
+        }
+
+        // Clone the current tableau so previous iterations remain unchanged for exporting.
+        var nextTableau = (double[,])tableau.Clone();
+
+        // Sort out the pivot row
+        for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
+        {
+            nextTableau[pivotRowIndex, columnIndex] =
+                tableau[pivotRowIndex, columnIndex] / pivotValue;
+        }
+
+        // Complete the rest of the normal primal simplex pivot calculations
+        for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            if (rowIndex == pivotRowIndex)
+            {
+                continue;
+            }
+
+            var rowMultiplier = tableau[rowIndex, pivotColumnIndex];
+
+            for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
+            {
+                var updatedValue =
+                    tableau[rowIndex, columnIndex]
+                    - rowMultiplier * nextTableau[pivotRowIndex, columnIndex];
+
+                // Clean up tiny floating-point values that should mathematically be zero.
+                if (Math.Abs(updatedValue) < tolerance)
+                {
+                    nextTableau[rowIndex, columnIndex] = 0.0;
+                }
+                else
+                {
+                    nextTableau[rowIndex, columnIndex] = updatedValue;
+                }
+            }
+        }
+
+        return nextTableau;
     }
 
     /// <summary>
