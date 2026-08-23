@@ -71,10 +71,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         // Main solving loop
         const int maximumIterations = 1000;
         var iteration = 0;
-        var tables = new List<double[,]>
-        {
-            (double[,])currentTableau.Clone(),
-        };
+        var tables = new List<double[,]> { (double[,])currentTableau.Clone() };
 
         List<int> pivotRows = new();
         List<int> pivotColumns = new();
@@ -158,7 +155,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
     {
         var additionalData = new AdditionalData
         {
-            Title = "Additional Data for Primal Simplex Solver"
+            Title = "Additional Data for Primal Simplex Solver",
         };
 
         additionalData.Rows.Add($"Total Columns: {pivotColumns.Count}");
@@ -203,10 +200,7 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         var sensitivityAnalysis = new SensitivityAnalysis
         {
             Title = "Sensitivity Analysis for Primal Simplex Solver",
-            Rows = new List<string>()
-            {
-                "None available"
-            },
+            Rows = new List<string>() { "None available" },
         };
 
         return sensitivityAnalysis;
