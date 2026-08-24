@@ -69,6 +69,34 @@ public sealed class Solvers
 
     /// <summary>
     /// Imports the default example model from the configured location and runs it
+    /// through the cutting plane solver without using the interactive menu.
+    /// </summary>
+    [TestMethod]
+    public async Task CuttingPlane()
+    {
+        var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
+        var importResult = await _importer.ImportDataFromTextFile(importFilePath);
+
+        Assert.IsTrue(importResult.IsSuccess, importResult.Message);
+        Assert.IsNotNull(importResult.LinearProgram);
+
+        var solverResult = await _solver.StartSolver(
+            SolverAlgorithm.CuttingPlane,
+            importResult.LinearProgram
+        );
+
+        Assert.IsTrue(solverResult.IsSuccess, solverResult.Message);
+
+        var exportResult = await _exporter.ExportDataToTextFile(
+            solverResult.exportReport,
+            exportFilePath
+        );
+
+        Assert.IsTrue(exportResult.IsSuccess, exportResult.Message);
+    }
+
+    /// <summary>
+    /// Imports the default example model from the configured location and runs it
     /// through the primal simplex solver without using the interactive menu.
     /// </summary>
     [TestMethod]

@@ -1,4 +1,7 @@
-﻿using LprSolver.Models;
+﻿using LprSolver.Application.Solvers.AlgorithmSet1;
+using LprSolver.Enums;
+using LprSolver.Models;
+using LprSolver.Services;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet3;
 
@@ -14,12 +17,16 @@ public interface ICutting_Plane_Algorithm
 
 public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
 {
+    private readonly IPrimal_Simplex_Algorithm _primalSimplex;
+
     /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
-    public Cutting_Plane_Algorithm()
+    public Cutting_Plane_Algorithm(IPrimal_Simplex_Algorithm primalSimplex)
     {
         // Dependency injection if required can be added here.
+
+        _primalSimplex = primalSimplex;
     }
 
     /// <summary>
@@ -29,12 +36,40 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         LinearProgram linearProgram
     )
     {
-        // Add code here to implement the Algorithm.
-        // Keep in mind that the return data should match the expected output format for the application.
+        var PrimalSimplex = _primalSimplex.Execute(linearProgram);
+        if (PrimalSimplex == null)
+        {
+            return new(false, "Primal simplex failed for cutting plane.", null);
+        }
 
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
+        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolveCuttingPlane();
 
+        return await ExportCuttingPlane(simplexTables, pivotColumns, pivotRows, columnNames);
+    }
+
+    private (
+        List<object> simplexTables,
+        List<int> pivotColumns,
+        List<int> pivotRows,
+        List<string> columnNames
+    ) SolveCuttingPlane()
+    {
+        // empty for now
+
+        return (new List<object>(), new List<int>(), new List<int>(), new List<string>());
+    }
+
+    private async Task<(
+        bool Success,
+        string Message,
+        ExportReport exportTableData
+    )> ExportCuttingPlane(
+        List<object> simplexTables,
+        List<int> pivotColumns,
+        List<int> pivotRows,
+        List<string> columnNames
+    )
+    {
         var tables = new List<object>();
 
         var exportReport = new ExportReport
@@ -46,10 +81,5 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         };
 
         return new(true, "Dummy cutting plane table created successfully.", exportReport);
-    }
-
-    private void OtherMethods()
-    {
-        //dummy method
     }
 }
