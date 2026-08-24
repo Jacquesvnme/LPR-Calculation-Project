@@ -46,25 +46,7 @@ public sealed class Solvers
     [TestMethod]
     public async Task PrimalSimplex()
     {
-        var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
-        var importResult = await _importer.ImportDataFromTextFile(importFilePath);
-
-        Assert.IsTrue(importResult.IsSuccess, importResult.Message);
-        Assert.IsNotNull(importResult.LinearProgram);
-
-        var solverResult = await _solver.StartSolver(
-            SolverAlgorithm.PrimalSimplex,
-            importResult.LinearProgram
-        );
-
-        Assert.IsTrue(solverResult.IsSuccess, solverResult.Message);
-
-        var exportResult = await _exporter.ExportDataToTextFile(
-            solverResult.exportReport,
-            exportFilePath
-        );
-
-        Assert.IsTrue(exportResult.IsSuccess, exportResult.Message);
+        await DefaultSolver(SolverAlgorithm.PrimalSimplex);
     }
 
     /// <summary>
@@ -74,6 +56,11 @@ public sealed class Solvers
     [TestMethod]
     public async Task CuttingPlane()
     {
+        await DefaultSolver(SolverAlgorithm.CuttingPlane);
+    }
+
+    private async Task DefaultSolver(SolverAlgorithm solverAlgorithm)
+    {
         var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
         var importResult = await _importer.ImportDataFromTextFile(importFilePath);
 
@@ -81,7 +68,7 @@ public sealed class Solvers
         Assert.IsNotNull(importResult.LinearProgram);
 
         var solverResult = await _solver.StartSolver(
-            SolverAlgorithm.CuttingPlane,
+            solverAlgorithm,
             importResult.LinearProgram
         );
 
