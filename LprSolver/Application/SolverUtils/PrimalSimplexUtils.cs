@@ -225,6 +225,7 @@ public static class PrimalSimplexUtils
         }
 
         var pivotRowIndex = -1;
+        // Infinite is assigned and then overriden when an actual ratio is found
         var smallestRatio = double.PositiveInfinity;
 
         // Constraint rows begin at row one because row zero contains the objective.
@@ -356,7 +357,7 @@ public static class PrimalSimplexUtils
                     - rowMultiplier * nextTableau[pivotRowIndex, columnIndex];
 
                 // Clean up tiny floating-point values that should mathematically be zero.
-                if (Math.Abs(updatedValue) < tolerance)
+                if (Math.Abs(updatedValue) < TOLERANCE)
                 {
                     nextTableau[rowIndex, columnIndex] = 0.0;
                 }
