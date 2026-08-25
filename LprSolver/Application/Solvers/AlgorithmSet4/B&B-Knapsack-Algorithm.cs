@@ -1,4 +1,5 @@
-﻿using LprSolver.Models;
+﻿using LprSolver.Extensions;
+using LprSolver.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -283,6 +284,72 @@ class Knapsack
         return bestValue;
     }
 
+    /*
+        Display
+     */
+
+    //Display sorted items  
+    public void DisplayItems()
+    {
+        Console.WriteLine();
+        Console.WriteLine("===");
+        Console.WriteLine("     ITEMS SORTED BY VALUE/WEIGHT");
+        Console.WriteLine("===");
+        Console.WriteLine(
+            "{0,-10}{1,-10}{2,-10}{3,-10}",
+            "Name",
+            "Weight",
+            "Value",
+            "Ratio"
+            );
+        Console.WriteLine("---");
+        foreach (Item item in items)
+        {
+            Console.WriteLine(
+                "{0,-10}{1,-10}{2,-10}{3,-10:F2}", //round down to 2 decimals
+                item.Name,
+                item.Weight,
+                item.Value,
+                item.Ratio
+                );
+        }
+    }
+
+    //Display B&B nodes
+    public void DisplayNodes()
+    {
+        Console.WriteLine();
+        Console.WriteLine("===");
+        Console.WriteLine("     BRANCH AND BOUND KNAPSACK NODES");
+        Console.WriteLine("===");
+        Console.WriteLine(
+            "{0,-10}{1,-12}{2,-25}{3,-10}{4,-10}{5,-10}",
+            "Node",
+            "Item",
+            "Decision",
+            "Weight",
+            "Value",
+            "Bound");
+        Console.WriteLine("---");
+
+        foreach (Node node in allNodes)
+        {
+            string nodeNumber =
+                string.IsNullOrEmpty(node.Number)
+                ? "Root"
+                : node.Number;
+
+            Console.WriteLine(
+                "{0,-10} {1,-12} {2,-25} {3,-10} {4,-10} {5,-10:F2}",
+                nodeNumber,
+                node.ItemName,
+                node.Decision,
+                node.Weight,
+                node.Value,
+                node.Bound);
+        }
+    }
+
     //returns all nodes created during the B&B Knapsack process
     public List<Node> GetAllNodes()
     { 
@@ -314,9 +381,11 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         LinearProgram linearProgram
     )
     {
-        var();
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
+        int capacity = 0;
+
+
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
