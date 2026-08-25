@@ -36,8 +36,8 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         LinearProgram linearProgram
     )
     {
-        var PrimalSimplex = _primalSimplex.Execute(linearProgram);
-        if (PrimalSimplex == null)
+        var PrimalSimplex = await _primalSimplex.Execute_WithoutFormatting(linearProgram);
+        if (PrimalSimplex.Success == null)
         {
             return new(false, "Primal simplex failed for cutting plane.", null);
         }
