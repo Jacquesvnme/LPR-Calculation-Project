@@ -42,7 +42,11 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
             return new(false, "Primal simplex failed for cutting plane.", null);
         }
 
-        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolveCuttingPlane();
+        //Create a working copy and send it onwards
+        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolveCuttingPlane(
+            (double[,])PrimalSimplex.Tables[^1].Clone(),
+            PrimalSimplex.ColumnNames
+        );
 
         return await ExportCuttingPlane(simplexTables, pivotColumns, pivotRows, columnNames);
     }
