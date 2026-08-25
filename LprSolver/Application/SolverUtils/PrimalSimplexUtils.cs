@@ -5,6 +5,11 @@ namespace LprSolver.Application.SolverUtils;
 
 public static class PrimalSimplexUtils
 {
+    // Floating-point calculations can produce very tiny negative values.
+    // These very small values should just be 0.
+    // The TOLERANCE prevents those rounding errors from making the tableau appear infeasible.
+    private const double TOLERANCE = 0.0000001;
+
     /// <summary>
     /// Used for creating a deep copy of a LinearProgram object to avoid modifying the original.
     /// </summary>
@@ -263,15 +268,11 @@ public static class PrimalSimplexUtils
             );
         }
 
-        // Floating-point calculations can produce very tiny negative values.
-        // These very small values should just be 0.
-        // The tolerance prevents those rounding errors from making the tableau appear infeasible.
-        const double tolerance = 0.0000001;
         var rightHandSideColumnIndex = tableau.GetLength(1) - 1;
 
         for (var rowIndex = 1; rowIndex < tableau.GetLength(0); rowIndex++)
         {
-            if (tableau[rowIndex, rightHandSideColumnIndex] < -tolerance)
+            if (tableau[rowIndex, rightHandSideColumnIndex] < -TOLERANCE)
             {
                 return true;
             }
@@ -321,13 +322,9 @@ public static class PrimalSimplexUtils
             );
         }
 
-        // Floating-point calculations can produce very tiny negative values.
-        // These very small values should just be 0.
-        // The tolerance prevents those rounding errors from making the tableau appear infeasible.
-        const double tolerance = 0.0000001;
         var pivotValue = tableau[pivotRowIndex, pivotColumnIndex];
 
-        if (Math.Abs(pivotValue) < tolerance)
+        if (Math.Abs(pivotValue) < TOLERANCE)
         {
             throw new InvalidOperationException("The pivot value cannot be zero.");
         }
