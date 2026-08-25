@@ -1,4 +1,5 @@
 ﻿using LprSolver.Application.Solvers.AlgorithmSet1;
+using LprSolver.Application.SolverUtils;
 using LprSolver.Enums;
 using LprSolver.Models;
 using LprSolver.Services;
@@ -56,9 +57,9 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         List<int> pivotColumns,
         List<int> pivotRows,
         List<string> columnNames
-    ) SolveCuttingPlane()
+    ) SolveCuttingPlane(double[,] initialTableau, List<string> columnNames)
     {
-        // empty for now
+        CuttingPlaneUtils.DetermineCuttingIndex(initialTableau, columnNames);
 
         return (new List<object>(), new List<int>(), new List<int>(), new List<string>());
     }
