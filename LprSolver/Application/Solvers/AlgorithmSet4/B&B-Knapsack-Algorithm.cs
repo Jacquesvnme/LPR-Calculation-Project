@@ -21,8 +21,9 @@ public interface IB_B_Knapsack_Algorithm
 // An item in the knapsack
 class Item
 {
-    public int Weight { get; set; }
-    public int Value {  get; set; }
+    public string Name { get; set; }    //name of the item e.g. xi = where i = 1,2,...
+    public int Weight { get; set; }     //weight of the item
+    public int Value {  get; set; }     //value or profit of the item
     
     //Value-to-Weight ratio
     //Used when calculating the upper bound
@@ -31,8 +32,9 @@ class Item
         get { return (double)Value / Weight; }
     }
 
-    public Item( int weight, int value) //constructure
+    public Item( string name, int weight, int value) //constructure
     {
+        Name = name;
         Weight = weight;
         Value = value;
     }
@@ -43,6 +45,7 @@ class Node
 {
     public string Number { get; set; }//node number e.g. 1.1 , 1.2
     public int Level { get; set; }// Intex of the last item considerd
+    public string ItemName { get; set; }// Name of item being condiderd at this node
     public int Weight { get; set; }// Total Weight of items selected so far
     public int Value { get; set; }// Total Value of the items so far
     public double Bound {  get; set; }// Upperbound: Maximum value that could be obtained from this node
@@ -51,12 +54,14 @@ class Node
     public Node(
         string number,
         int level, 
+        string itemName,
         int weight, 
         int value,
         string decision)
     {
         Number = number;
         Level = level;
+        ItemName = itemName;
         Weight = weight;
         Value = value;
         Decision = decision;
@@ -78,7 +83,7 @@ class Knapsack
 
     public Knapsack(List<Item> items, int capacity)
     {
-        // Sort items by value/weight ratio
+        // Sort items by value/weight ratio, highest ratio first
         this.items = items
             .OrderByDescending(item => item.Ratio) //sorting
             .ToList; //adding to the list
@@ -194,10 +199,10 @@ class Knapsack
             Node skip = new Node(
                 excludeNumber,
                 nextLevel,
+                currentItem.Name,
                 current.Weight,
                 current.Value,
-                $"Exclude Item {nextLevel + 1}"
-
+                $"{currentItem.Name} = 0"
             );
 
             //Calculate the upper-bound for this node
@@ -233,10 +238,11 @@ class Knapsack
 
             Node take = new Node(
                 includeNumber,
-                nextLevel,
+                nextLevel, 
+                currentItem.Name,
                 current.Weight + currentItem.Weight,
                 current.Value + currentItem.Value,
-                $"Include Item {nextLevel + 1}"
+                $"{currentItem.Name} = 1"                
             );
 
             /*
@@ -308,7 +314,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         LinearProgram linearProgram
     )
     {
-        
+        var();
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
 
