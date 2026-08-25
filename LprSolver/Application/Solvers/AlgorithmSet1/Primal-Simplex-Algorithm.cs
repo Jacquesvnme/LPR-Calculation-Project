@@ -12,6 +12,15 @@ public interface IPrimal_Simplex_Algorithm
     Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
         LinearProgram linearProgram
     );
+
+    Task<(
+        bool Success,
+        string Message,
+        List<double[,]> Tables,
+        List<int> PivotColumns,
+        List<int> PivotRows,
+        List<string> ColumnNames
+    )> Execute_WithoutFormatting(LinearProgram linearProgram);
 }
 
 public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
@@ -36,6 +45,25 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         );
 
         return await ExportPrimalSimplex(simplexTables, pivotColumns, pivotRows, columnNames);
+    }
+
+    /// <summary>
+    /// Main method, with formatting excluded.
+    /// </summary>
+    public async Task<(
+        bool Success,
+        string Message,
+        List<double[,]> Tables,
+        List<int> PivotColumns,
+        List<int> PivotRows,
+        List<string> ColumnNames
+    )> Execute_WithoutFormatting(LinearProgram linearProgram)
+    {
+        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolvePrimalSimplex(
+            linearProgram
+        );
+
+        return new(true, "No Issues", simplexTables, pivotColumns, pivotRows, columnNames);
     }
 
     /// <summary>
