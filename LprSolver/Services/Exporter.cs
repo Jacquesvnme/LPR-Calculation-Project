@@ -210,10 +210,10 @@ public class Exporter : IExporter
         }
 
         if (
-            exportReport.ImportantDetails.Rows.Count() < 0
-            || exportReport.SensitivityAnalysis.Rows.Count() < 0
-            || exportReport.AdditionalData.Rows.Count() < 0
-            || exportReport.Tables.Tables.Count < 0
+            exportReport.ImportantDetails.Rows.Count() <= 0
+            || exportReport.SensitivityAnalysis.Rows.Count() <= 0
+            || exportReport.AdditionalData.Rows.Count() <= 0
+            || exportReport.Tables.Tables.Count <= 0
         )
         {
             return new(false, "Data contains no rows");
