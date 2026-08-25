@@ -475,6 +475,20 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             );
         }
 
+        //Display original input
+        Console.WriteLine();
+        Console.WriteLine("===");
+        Console.WriteLine("     ORIGINAL ITEMS");
+        Console.WriteLine("===");
+        foreach (Item item in items)
+        {
+            Console.WriteLine(
+                $"Name: {item.Name}, " +
+                $"Weight: {item.Weight}" +
+                $"Value: {item.Value}" +
+                $"Ratio: {item.Ratio:F2}" //round to 2 decimals
+                );
+        }
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
