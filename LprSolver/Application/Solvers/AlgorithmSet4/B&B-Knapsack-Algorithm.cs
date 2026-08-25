@@ -1,4 +1,5 @@
-﻿using LprSolver.Extensions;
+﻿//using LprSolver.Extensions;
+using LprSolver.Extensions;
 using LprSolver.Models;
 using System;
 using System.Collections.Generic;
@@ -383,8 +384,96 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
     {
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
-        int capacity = 0;
+        Console.WriteLine("===");
+        Console.WriteLine("     KNAPSACK - BRANCH AND BOUND");
+        Console.WriteLine("===");
 
+        //Ask for number of items
+        int numberOfItems;
+        while (true) {
+            Console.Write(
+                "\nEnter number of items: ");
+            if (int.TryParse(
+                Console.ReadLine(),
+                out numberOfItems)
+                && numberOfItems > 0)
+            {
+                break;
+            }
+            Console.WriteLine("Enter a positive interger.");
+        }
+
+        //Ask for knapsack capacity
+        int capacity;
+        while (true) {
+            Console.Write(
+               "\nEnter knapsack capacity: ");
+            if (int.TryParse(
+                Console.ReadLine(),
+                out capacity)
+                && capacity > 0)
+            {
+                break;
+            }
+            Console.WriteLine("Enter a positive interger.");
+        }
+
+        //Ask for items
+        //Create item list
+        List<Item> items = new List<Item>();
+
+        //Get each item from user
+        for (int i = 0; i < numberOfItems; i++)
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                $"--- Item {i + 1} ---");
+            
+            //Item name
+            Console.Write("Enter item name: ");
+            string name =
+                Console.ReadLine() ?? $"x{i + 1}";
+
+            //Item weight
+            int weight;
+
+            while (true)
+            {
+                Console.Write("Enter item weight: ");
+                if (int.TryParse(
+                        Console.Readline(),
+                        out weight)
+                    && weight > 0)
+                {
+                    break ;
+                }
+                Console.WriteLine("Weight must be a positive interger.");
+            }
+
+            //Item value
+            int value;
+            while (true)
+            {
+                Console.Write("Enter item value: ");
+                if (int.TryParse(
+                        Console.Readline(),
+                        out value)
+                    && value > 0)
+                {
+                    break;
+                }
+                Console.WriteLine("Value must be zero or greater.");
+            }
+
+            //Add item to list
+            items.Add(
+                new Item(
+                    name,
+                    weight,
+                    value
+                )
+            );
+        }
 
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
