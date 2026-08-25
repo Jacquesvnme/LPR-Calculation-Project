@@ -1,5 +1,4 @@
-﻿//using LprSolver.Extensions;
-using LprSolver.Extensions;
+﻿using LprSolver.Extensions;
 using LprSolver.Models;
 using System;
 using System.Collections.Generic;
@@ -297,7 +296,7 @@ class Knapsack
         Console.WriteLine("     ITEMS SORTED BY VALUE/WEIGHT");
         Console.WriteLine("===");
         Console.WriteLine(
-            "{0,-10}{1,-10}{2,-10}{3,-10}",
+            "{0,-10}{1,-10}{2,-10}{3,-10}", //formatting for columns
             "Name",
             "Weight",
             "Value",
@@ -490,22 +489,81 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 );
         }
 
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
+        //Create solver
+        Knapsack solver =
+            new Knapsack(
+                items,
+                capacity
+            );
 
+        //Display sorted items
+        List<Item> items =
+            solver.DisplayItems();
+        
+        //solve
+        int bestValue = 
+            solver.SolveKnapsack();
+
+        //display branch and bound knapsack tree
+        List<Node> nodes = 
+            solver.GetAllNodes();
+
+        //create table data
         var tables = new List<object>();
 
+        //add each B&B node to the table
+        foreach (Node node in nodes)
+        {
+            tables.Add(new
+            {
+                Node = string.IsNullOrEmpty(node.Number)
+                    ? "ROOT"
+                    : node.Number,
+                Level = node.Level,
+                Decision = node.Decision,
+                Weight = node.Weight,
+                Value = node.Value,
+                Bound = Math.Round(
+                    node.Bound,
+                    2
+                )
+            });
+        }
+
+        //create export report
         var exportReport = new ExportReport
         {
             AdditionalData = new AdditionalData(),
             ImportantDetails = new ImportantDetails(),
             SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables },
+            Tables = new ExportTable 
+            { 
+                Tables = tables 
+            }
         };
 
+        /*display final answer
+        Console.WriteLine();
+        Console.WriteLine("===");
+        Console.WriteLine(
+            $"Maximum Value = {bestValue}");
+        Console.WriteLine(
+            $"Knapsack Capacity = {capacity}");
+        Console.WriteLine("===");
+        Console.WriteLine();
+        Console.Write("Export? Y/N: ");
+        Console.WriteLine("Press any key to exit");*/
+
+
+        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
+        OtherMethods();
+
+        //return result
         return new(
             true,
-            "Dummy branch and bound knapsack table created successfully.",
+            $"Branch and Bound Knapsack completed.", +
+            $"Maximum value = {bestValue}." +
+            $"Node generated = {nodes.Count}",
             exportReport
         );
     }
