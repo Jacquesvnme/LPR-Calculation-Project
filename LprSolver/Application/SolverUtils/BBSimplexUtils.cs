@@ -97,4 +97,71 @@ public static class BBSimplexUtils
 
         return branchRow;   // –1 when the basis is already integer
     }
+
+    /// <summary>
+    /// Finds the constraint row with the most negative RHS – the row that is
+    /// currently violating primal feasibility after a branch constraint was added.
+    /// Returns -1 once every RHS value is non-negative (primal feasible).
+    /// </summary>
+    public static int FindDualPivotRow(double[,] tableau)
+    {
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        int rowCount          = tableau.GetLength(0);
+        int rhsColumnIndex    = tableau.GetLength(1) - 1;
+        int pivotRowIndex     = -1;
+        double mostNegativeRhs = 0.0;
+
+        // Skip the objective row (row 0); only constraint rows can be primal-infeasible.
+        for (int r = 1; r < rowCount; r++)
+        {
+            double rhs = tableau[r, rhsColumnIndex];
+
+            if (rhs < mostNegativeRhs)
+            {
+                mostNegativeRhs = rhs;
+                pivotRowIndex   = r;
+            }
+        }
+
+        return pivotRowIndex;
+    }
+
+    /// <summary>
+    /// Finds the entering column for a dual-simplex pivot on the given (infeasible) row.
+    /// Only negative entries in that row are valid candidates; among them, the one with
+    /// the smallest ratio of |objective coefficient / row coefficient| is chosen so the
+    /// pivot keeps the tableau dual-feasible (i.e. keeps the objective row optimal).
+    /// Returns -1 when no negative entry exists in the row, meaning the branch is infeasible.
+    /// </summary>
+    public static int FindDualPivotColumn(double[,] tableau, int pivotRowIndex)
+    {
+        ArgumentNullException.ThrowIfNull(tableau);
+
+        int columnCount       = tableau.GetLength(1);
+        int rhsColumnIndex    = columnCount - 1;
+        int pivotColumnIndex  = -1;
+        double smallestRatio  = double.PositiveInfinity;
+
+        for (int c = 0; c < rhsColumnIndex; c++)
+        {
+            double rowValue = tableau[pivotRowIndex, c];
+
+            // Only negative entries can serve as the leaving-variable's replacement.
+            if (rowValue >= 0.0)
+            {
+                continue;
+            }
+
+            double ratio = Math.Abs(tableau[0, c] / rowValue);
+
+            if (ratio < smallestRatio)
+            {
+                smallestRatio  = ratio;
+                pivotColumnIndex = c;
+            }
+        }
+
+        return pivotColumnIndex;
+    }
 }
