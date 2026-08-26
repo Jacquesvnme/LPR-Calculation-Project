@@ -10,4 +10,18 @@ public static class CuttingPlaneUtils
     // The target fractional part for selecting a cutting row is 0.5.
     // The target closer to this value will be used and selected.
     private const double TARGET_FRACTIONAL = 0.5;
+
+    public static (
+        bool Success,
+        string Message,
+        string CuttingEntry,
+        int CuttingRow,
+        int RightHandSideColumn
+    ) DetermineCuttingIndex(double[,] initialTableau, List<string> columnNames)
+    {
+
+
+
+        return new(false, "", "", 0, 0);
+    }
 }
