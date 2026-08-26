@@ -18,6 +18,7 @@ public interface ICutting_Plane_Algorithm
 
 public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
 {
+    private const int MAXIMUM_ITERATIONS = 1000;
     private readonly IPrimal_Simplex_Algorithm _primalSimplex;
 
     /// <summary>
