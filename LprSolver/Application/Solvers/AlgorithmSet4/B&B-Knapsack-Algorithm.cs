@@ -1,9 +1,9 @@
-﻿using LprSolver.Extensions;
-using LprSolver.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LprSolver.Extensions;
+using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet4;
 
@@ -18,14 +18,13 @@ public interface IB_B_Knapsack_Algorithm
 }
 
 /// Classes for knapsack
-
 // An item in the knapsack
 class Item
 {
-    public string Name { get; set; }    //name of the item e.g. xi = where i = 1,2,...
-    public int Weight { get; set; }     //weight of the item
-    public int Value {  get; set; }     //value or profit of the item
-    
+    public string Name { get; set; } //name of the item e.g. xi = where i = 1,2,...
+    public int Weight { get; set; } //weight of the item
+    public int Value { get; set; } //value or profit of the item
+
     //Value-to-Weight ratio
     //Used when calculating the upper bound
     public double Ratio
@@ -33,7 +32,7 @@ class Item
         get { return (double)Value / Weight; }
     }
 
-    public Item( string name, int weight, int value) //constructure
+    public Item(string name, int weight, int value) //constructure
     {
         Name = name;
         Weight = weight;
@@ -44,21 +43,15 @@ class Item
 // One node of the Branch and Bound Tree
 class Node
 {
-    public string Number { get; set; }//node number e.g. 1.1 , 1.2
-    public int Level { get; set; }// Intex of the last item considerd
-    public string ItemName { get; set; }// Name of item being condiderd at this node
-    public int Weight { get; set; }// Total Weight of items selected so far
-    public int Value { get; set; }// Total Value of the items so far
-    public double Bound {  get; set; }// Upperbound: Maximum value that could be obtained from this node
+    public string Number { get; set; } //node number e.g. 1.1 , 1.2
+    public int Level { get; set; } // Intex of the last item considerd
+    public string ItemName { get; set; } // Name of item being condiderd at this node
+    public int Weight { get; set; } // Total Weight of items selected so far
+    public int Value { get; set; } // Total Value of the items so far
+    public double Bound { get; set; } // Upperbound: Maximum value that could be obtained from this node
     public string Decision { get; set; } //Include / Exclude item
 
-    public Node(
-        string number,
-        int level, 
-        string itemName,
-        int weight, 
-        int value,
-        string decision)
+    public Node(string number, int level, string itemName, int weight, int value, string decision)
     {
         Number = number;
         Level = level;
@@ -71,7 +64,7 @@ class Node
 
 class Knapsack
 {
-    private readonly List<Item> items;
+    private readonly List<Item> items; //arwsad
     private readonly int capacity;
 
     // Stores the best solution found so far
@@ -80,18 +73,15 @@ class Knapsack
     //Stores every node created
     private readonly List<Node> allNodes = new();
 
-    
-
     public Knapsack(List<Item> items, int capacity)
     {
         // Sort items by value/weight ratio, highest ratio first
         this.items = items
             .OrderByDescending(item => item.Ratio) //sorting
-            .ToList; //adding to the list
+            .ToList(); //adding to the list
 
         this.capacity = capacity; //capacity of knapsack
     }
-
 
     private double CalculateBound(Node node)
     {
@@ -109,11 +99,10 @@ class Knapsack
         int i = node.Level + 1;
 
         // Add items while they fit in the knapsack
-        while (i < items.Count &&
-                totalWeight + item[i].Weight >= capacity)
+        while (i < items.Count && totalWeight + items[i].Weight >= capacity)
         {
-            totalWeight += item[i].Weight;
-            bound += item[i].Value;
+            totalWeight += items[i].Weight;
+            bound += items[i].Value;
             i++;
         }
 
@@ -139,10 +128,11 @@ class Knapsack
 
         //root node
         Node root = new Node(
-            "",//Root has no number
-            -1,// level, no items considerd yet
-            0,// weight, knapsack is empty
-            0,// value, no value collected yet
+            "", //Root has no number
+            -1, // level, no items considerd yet
+            "", //TODO item name for next nodes//Root has no item being considered
+            0, // weight, knapsack is empty
+            0, // value, no value collected yet
             "ROOT"
         );
 
@@ -153,7 +143,7 @@ class Knapsack
         allNodes.Add(root);
 
         //Priority queue, smaller remaining capacity processed first
-        var queue = new PriorityQueue<Node, int>();
+        queue = new PriorityQueue<Node, int>();
 
         // remaining capacity left over at the root
         int remainingCapacity = capacity - root.Weight;
@@ -162,7 +152,7 @@ class Knapsack
         queue.Enqueue(root, remainingCapacity);
 
         /*
-         BRANCH AND BOUND
+         BRANCH AND BOUND KNAPSACK
          */
         // continue while there are nodes to be explored
         while (queue.Count > 0)
@@ -182,7 +172,8 @@ class Knapsack
                 continue;
 
             //get next item
-            Item item = item[nextLevel];
+            Item item = items[nextLevel];
+
 
             /*
                 Problem 1: exclude item e.g. xi=0
@@ -200,10 +191,10 @@ class Knapsack
             Node skip = new Node(
                 excludeNumber,
                 nextLevel,
-                currentItem.Name,
+                current.Name, //current item
                 current.Weight,
                 current.Value,
-                $"{currentItem.Name} = 0"
+                $"{current.Name} = 0"
             );
 
             //Calculate the upper-bound for this node
@@ -239,11 +230,11 @@ class Knapsack
 
             Node take = new Node(
                 includeNumber,
-                nextLevel, 
+                nextLevel,
                 currentItem.Name,
                 current.Weight + currentItem.Weight,
                 current.Value + currentItem.Value,
-                $"{currentItem.Name} = 1"                
+                $"{currentItem.Name} = 1"
             );
 
             /*
@@ -279,7 +270,6 @@ class Knapsack
                 //Store node for export
                 allNodes.Add(take);
             }
-
         }
         return bestValue;
     }
@@ -288,8 +278,8 @@ class Knapsack
         Display
      */
 
-    //Display sorted items  
-    public void DisplayItems()
+    //Display sorted items
+    public List<Item> DisplayItems()
     {
         Console.WriteLine();
         Console.WriteLine("===");
@@ -301,7 +291,7 @@ class Knapsack
             "Weight",
             "Value",
             "Ratio"
-            );
+        );
         Console.WriteLine("---");
         foreach (Item item in items)
         {
@@ -311,8 +301,9 @@ class Knapsack
                 item.Weight,
                 item.Value,
                 item.Ratio
-                );
+            );
         }
+        //return, void TODO
     }
 
     //Display B&B nodes
@@ -329,15 +320,13 @@ class Knapsack
             "Decision",
             "Weight",
             "Value",
-            "Bound");
+            "Bound"
+        );
         Console.WriteLine("---");
 
         foreach (Node node in allNodes)
         {
-            string nodeNumber =
-                string.IsNullOrEmpty(node.Number)
-                ? "Root"
-                : node.Number;
+            string nodeNumber = string.IsNullOrEmpty(node.Number) ? "Root" : node.Number;
 
             Console.WriteLine(
                 "{0,-10} {1,-12} {2,-25} {3,-10} {4,-10} {5,-10:F2}",
@@ -346,13 +335,14 @@ class Knapsack
                 node.Decision,
                 node.Weight,
                 node.Value,
-                node.Bound);
+                node.Bound
+            );
         }
     }
 
     //returns all nodes created during the B&B Knapsack process
     public List<Node> GetAllNodes()
-    { 
+    {
         return allNodes;
     }
 
@@ -361,7 +351,6 @@ class Knapsack
     {
         return items();
     }
-
 }
 
 public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
@@ -389,13 +378,10 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
 
         //Ask for number of items
         int numberOfItems;
-        while (true) {
-            Console.Write(
-                "\nEnter number of items: ");
-            if (int.TryParse(
-                Console.ReadLine(),
-                out numberOfItems)
-                && numberOfItems > 0)
+        while (true)
+        {
+            Console.Write("\nEnter number of items: ");
+            if (int.TryParse(Console.ReadLine(), out numberOfItems) && numberOfItems > 0)
             {
                 break;
             }
@@ -404,13 +390,10 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
 
         //Ask for knapsack capacity
         int capacity;
-        while (true) {
-            Console.Write(
-               "\nEnter knapsack capacity: ");
-            if (int.TryParse(
-                Console.ReadLine(),
-                out capacity)
-                && capacity > 0)
+        while (true)
+        {
+            Console.Write("\nEnter knapsack capacity: ");
+            if (int.TryParse(Console.ReadLine(), out capacity) && capacity > 0)
             {
                 break;
             }
@@ -425,13 +408,11 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         for (int i = 0; i < numberOfItems; i++)
         {
             Console.WriteLine();
-            Console.WriteLine(
-                $"--- Item {i + 1} ---");
-            
+            Console.WriteLine($"--- Item {i + 1} ---");
+
             //Item name
             Console.Write("Enter item name: ");
-            string name =
-                Console.ReadLine() ?? $"x{i + 1}";
+            string name = Console.ReadLine() ?? $"x{i + 1}";
 
             //Item weight
             int weight;
@@ -439,12 +420,9 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             while (true)
             {
                 Console.Write("Enter item weight: ");
-                if (int.TryParse(
-                        Console.Readline(),
-                        out weight)
-                    && weight > 0)
+                if (int.TryParse(Console.ReadLine(), out weight) && weight > 0)
                 {
-                    break ;
+                    break;
                 }
                 Console.WriteLine("Weight must be a positive interger.");
             }
@@ -454,10 +432,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             while (true)
             {
                 Console.Write("Enter item value: ");
-                if (int.TryParse(
-                        Console.Readline(),
-                        out value)
-                    && value > 0)
+                if (int.TryParse(Console.ReadLine(), out value) && value > 0)
                 {
                     break;
                 }
@@ -465,13 +440,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             }
 
             //Add item to list
-            items.Add(
-                new Item(
-                    name,
-                    weight,
-                    value
-                )
-            );
+            items.Add(new Item(name, weight, value));
         }
 
         //Display original input
@@ -482,31 +451,24 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         foreach (Item item in items)
         {
             Console.WriteLine(
-                $"Name: {item.Name}, " +
-                $"Weight: {item.Weight}" +
-                $"Value: {item.Value}" +
-                $"Ratio: {item.Ratio:F2}" //round to 2 decimals
-                );
+                $"Name: {item.Name}, "
+                    + $"Weight: {item.Weight}"
+                    + $"Value: {item.Value}"
+                    + $"Ratio: {item.Ratio:F2}" //round to 2 decimals
+            );
         }
 
         //Create solver
-        Knapsack solver =
-            new Knapsack(
-                items,
-                capacity
-            );
+        Knapsack solver = new Knapsack(items, capacity);
 
         //Display sorted items
-        List<Item> items =
-            solver.DisplayItems();
-        
+        items = solver.DisplayItems();
+
         //solve
-        int bestValue = 
-            solver.SolveKnapsack();
+        int bestValue = solver.SolveKnapsack();
 
         //display branch and bound knapsack tree
-        List<Node> nodes = 
-            solver.GetAllNodes();
+        List<Node> nodes = solver.GetAllNodes();
 
         //create table data
         var tables = new List<object>();
@@ -514,32 +476,31 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         //add each B&B node to the table
         foreach (Node node in nodes)
         {
-            tables.Add(new
-            {
-                Node = string.IsNullOrEmpty(node.Number)
-                    ? "ROOT"
-                    : node.Number,
-                Level = node.Level,
-                Decision = node.Decision,
-                Weight = node.Weight,
-                Value = node.Value,
-                Bound = Math.Round(
-                    node.Bound,
-                    2
-                )
-            });
+            tables.Add(
+                new
+                {
+                    Node = string.IsNullOrEmpty(node.Number) ? "ROOT" : node.Number,
+                    Level = node.Level,
+                    Decision = node.Decision,
+                    Weight = node.Weight,
+                    Value = node.Value,
+                    Bound = Math.Round(node.Bound, 2),
+                }
+            );
         }
+
+        var iDetails = new ImportantDetails();
+        iDetails.Title = "Im";
+        iDetails.Rows.Add("$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\"");
+
 
         //create export report
         var exportReport = new ExportReport
         {
             AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
+            ImportantDetails = iDetails,
             SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable 
-            { 
-                Tables = tables 
-            }
+            Tables = new ExportTable { Tables = tables , Title = "rr"},
         };
 
         /*display final answer
@@ -554,16 +515,14 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         Console.Write("Export? Y/N: ");
         Console.WriteLine("Press any key to exit");*/
 
-
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
 
         //return result
         return new(
             true,
-            $"Branch and Bound Knapsack completed.", +
-            $"Maximum value = {bestValue}." +
-            $"Node generated = {nodes.Count}",
+            $"Branch and Bound Knapsack completed.",
+            
             exportReport
         );
     }
