@@ -25,6 +25,8 @@ public interface IPrimal_Simplex_Algorithm
 
 public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
 {
+    private const int MAXIMUMITERATIONS = 1000;
+
     /// <summary>
     /// Class constructor for the Application class.
     /// </summary>
@@ -97,7 +99,6 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         }
 
         // Main solving loop
-        const int maximumIterations = 1000;
         var iteration = 0;
         var tables = new List<double[,]> { (double[,])currentTableau.Clone() };
 
@@ -114,12 +115,12 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
                 break;
             }
 
-            if (iteration >= maximumIterations)
+            if (iteration >= MAXIMUMITERATIONS)
             {
                 // Infeasible solution
 
                 throw new InvalidOperationException(
-                    $"The primal simplex algorithm exceeded {maximumIterations} iterations."
+                    $"The primal simplex algorithm exceeded {MAXIMUMITERATIONS} iterations."
                 );
             }
 
