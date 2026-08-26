@@ -1,8 +1,6 @@
 ﻿using LprSolver.Application.Solvers.AlgorithmSet1;
 using LprSolver.Application.SolverUtils;
-using LprSolver.Enums;
 using LprSolver.Models;
-using LprSolver.Services;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet3;
 
