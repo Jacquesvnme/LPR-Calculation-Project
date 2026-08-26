@@ -31,27 +31,37 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
         LinearProgram linearProgram
     )
     {
-        // Add code here to implement the Algorithm.
-        // Keep in mind that the return data should match the expected output format for the application.
-
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
-
-        var tables = new List<object>();
-
-        var exportReport = new ExportReport
-        {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables },
-        };
-
-        return new(
-            true,
-            "Dummy branch and bound simplex table created successfully.",
-            exportReport
+        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolveBBSimplex(
+            linearProgram
         );
+
+        return await ExportBBSimplex(simplexTables, pivotColumns, pivotRows, columnNames);
+    }
+
+    /// <summary>
+    /// Solves the linear program using the branch and bound simplex algorithm.
+    /// </summary>
+    /// <returns></returns>
+    private (
+        List<double[,]> Tables,
+        List<int> PivotColumns,
+        List<int> PivotRows,
+        List<string> ColumnNames
+    ) SolveBBSimplex(LinearProgram linearProgram)
+    {
+        if (linearProgram == null)
+        {
+            throw new ArgumentNullException(
+                nameof(linearProgram),
+                "Linear program cannot be null."
+            );
+        } 
+
+        var (currentTableau, columnNames) = PrimalSimplexUtils.BuildInitialTableau(
+            linearProgram.DeepCopy()
+        );
+
+        //return new(tables, pivotColumns, pivotRows, columnNames);
     }
 
     private void OtherMethods()
