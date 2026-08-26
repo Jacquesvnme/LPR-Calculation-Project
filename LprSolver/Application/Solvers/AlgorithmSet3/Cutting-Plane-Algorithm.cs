@@ -66,6 +66,8 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
     }
 
     private (
+        bool Success,
+        string Message,
         List<object> simplexTables,
         List<int> pivotColumns,
         List<int> pivotRows,
