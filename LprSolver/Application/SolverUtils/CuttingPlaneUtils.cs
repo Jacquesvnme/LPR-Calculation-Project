@@ -11,6 +11,46 @@ public static class CuttingPlaneUtils
     // The target closer to this value will be used and selected.
     private const double TARGET_FRACTIONAL = 0.5;
 
+    public static (bool Success, string Message) InitialCuttingPlaneValidation(
+        double[,] initialTableau,
+        List<string> columnNames
+    )
+    {
+        // Validate inputs
+        if (initialTableau == null)
+        {
+            return (false, "The tableau cannot be null.");
+        }
+
+        if (columnNames == null)
+        {
+            return (false, "The column names cannot be null.");
+        }
+
+        // Get column & row counts
+        var rowCount = initialTableau.GetLength(0);
+        var columnCount = initialTableau.GetLength(1);
+
+        if (rowCount < 2 || columnCount < 2)
+        {
+            return (
+                false,
+                "The tableau must contain an objective row, at least one constraint row, and an RHS column."
+            );
+        }
+
+        var rightHandSideColumn = columnCount - 1;
+        if (columnNames.Count != rightHandSideColumn)
+        {
+            return (
+                false,
+                "There must be one column name for every tableau column except the RHS column."
+            );
+        }
+
+        return (true, "No issues.");
+    }
+
     public static (
         bool Success,
         string Message,
@@ -19,6 +59,12 @@ public static class CuttingPlaneUtils
         int RightHandSideColumn
     ) DetermineCuttingIndex(double[,] initialTableau, List<string> columnNames)
     {
+        // Validation
+        var validation = InitialCuttingPlaneValidation(initialTableau, columnNames);
+        if (!validation.Success)
+        {
+            return new(false, validation.Message, string.Empty, -1, -1);
+        }
 
 
 
