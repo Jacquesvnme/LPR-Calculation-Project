@@ -75,9 +75,55 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         List<string> columnNames
     ) SolveCuttingPlane(double[,] initialTableau, List<string> columnNames)
     {
-        CuttingPlaneUtils.DetermineCuttingIndex(initialTableau, columnNames);
+        if (initialTableau == null || columnNames == null)
+        {
+            return new(false, "Required data is empty", null, null, null, null);
+        }
 
-        return (new List<object>(), new List<int>(), new List<int>(), new List<string>());
+        // Cloning the existing data into new variables
+        // Perserving the old data if needed
+        var currentTableau = (double[,])initialTableau.Clone();
+        var tables = new List<object> { (double[,])currentTableau.Clone() };
+        var currentColumnNames = new List<string>(columnNames);
+
+        // Values for keeping track of pivots and cut iteration
+        var pivotColumns = new List<int>();
+        var pivotRows = new List<int>();
+        var cutNumber = 1;
+
+        while (true)
+        {
+            var cuttingIndexResult = CuttingPlaneUtils.DetermineCuttingIndex(
+                currentTableau,
+                currentColumnNames
+            );
+
+            if (!cuttingIndexResult.Success)
+            {
+                return new(
+                    false,
+                    cuttingIndexResult.Message,
+                    tables,
+                    pivotColumns,
+                    pivotRows,
+                    currentColumnNames
+                );
+            }
+
+            if (cuttingIndexResult.CuttingRow == -1)
+            {
+                break;
+            }
+        }
+
+        return new(
+            true,
+            "The cutting-plane algorithm found an integer solution.",
+            tables,
+            pivotColumns,
+            pivotRows,
+            currentColumnNames
+        );
     }
 
     private async Task<(
