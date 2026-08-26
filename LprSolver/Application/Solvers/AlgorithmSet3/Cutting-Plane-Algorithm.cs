@@ -48,12 +48,21 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         }
 
         //Create a working copy and send it onwards
-        var (simplexTables, pivotColumns, pivotRows, columnNames) = SolveCuttingPlane(
+        var cuttingPlaneResult = SolveCuttingPlane(
             (double[,])PrimalSimplex.Tables[^1].Clone(),
             PrimalSimplex.ColumnNames
         );
+        if (!cuttingPlaneResult.Success)
+        {
+            return new(false, cuttingPlaneResult.Message, null);
+        }
 
-        return await ExportCuttingPlane(simplexTables, pivotColumns, pivotRows, columnNames);
+        return await ExportCuttingPlane(
+            cuttingPlaneResult.simplexTables,
+            cuttingPlaneResult.pivotColumns,
+            cuttingPlaneResult.pivotRows,
+            cuttingPlaneResult.columnNames
+        );
     }
 
     private (
