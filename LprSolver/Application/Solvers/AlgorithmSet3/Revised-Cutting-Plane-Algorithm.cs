@@ -29,14 +29,6 @@ public class Revised_Cutting_Plane_Algorithm : IRevised_Cutting_Plane_Algorithm
         LinearProgram linearProgram
     )
     {
-        var exportReport = new ExportReport
-        {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable(),
-        };
-
-        return new(false, "Method not implemented.", exportReport);
+        return new(false, "Method not implemented.", null);
     }
 }
