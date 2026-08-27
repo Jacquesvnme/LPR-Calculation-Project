@@ -130,7 +130,7 @@ class Knapsack
         Node root = new Node(
             "", //Root has no number
             -1, // level, no items considerd yet
-            "", //TODO item name for next nodes//Root has no item being considered
+            "", //Root has no item being considered
             0, // weight, knapsack is empty
             0, // value, no value collected yet
             "ROOT"
@@ -174,7 +174,6 @@ class Knapsack
             //get next item
             Item item = items[nextLevel];
 
-
             /*
                 Problem 1: exclude item e.g. xi=0
             */
@@ -191,10 +190,10 @@ class Knapsack
             Node skip = new Node(
                 excludeNumber,
                 nextLevel,
-                current.Name, //current item
+                current.ItemName, //current item
                 current.Weight,
                 current.Value,
-                $"{current.Name} = 0"
+                $"{current.ItemName} = 0"
             );
 
             //Calculate the upper-bound for this node
@@ -293,6 +292,7 @@ class Knapsack
             "Ratio"
         );
         Console.WriteLine("---");
+        List<Item> displayItems = items;
         foreach (Item item in items)
         {
             Console.WriteLine(
@@ -303,7 +303,7 @@ class Knapsack
                 item.Ratio
             );
         }
-        //return, void TODO
+        return displayItems; //void TODO
     }
 
     //Display B&B nodes
@@ -349,7 +349,7 @@ class Knapsack
     //returns the stored items
     public List<Item> GetItems()
     {
-        return items();
+        return DisplayItems();
     }
 }
 
@@ -491,8 +491,9 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
 
         var iDetails = new ImportantDetails();
         iDetails.Title = "Im";
-        iDetails.Rows.Add("$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\"");
-
+        iDetails.Rows.Add(
+            "$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\""
+        );
 
         //create export report
         var exportReport = new ExportReport
@@ -500,7 +501,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             AdditionalData = new AdditionalData(),
             ImportantDetails = iDetails,
             SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables , Title = "rr"},
+            Tables = new ExportTable { Tables = tables, Title = "rr" },
         };
 
         /*display final answer
@@ -519,12 +520,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         OtherMethods();
 
         //return result
-        return new(
-            true,
-            $"Branch and Bound Knapsack completed.",
-            
-            exportReport
-        );
+        return new(true, $"Branch and Bound Knapsack completed.", exportReport);
     }
 
     private void OtherMethods()
