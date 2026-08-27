@@ -18,7 +18,9 @@ public interface IB_B_Knapsack_Algorithm
     );
 }
 
-/// Classes for knapsack
+/*
+    Classes for knapsack
+ */
 // An item in the knapsack
 class Item
 {
@@ -293,7 +295,7 @@ class Knapsack
     {
         Console.WriteLine();
         Console.WriteLine("===");
-        Console.WriteLine("     RATIO TEST");
+        Console.WriteLine("     RATIO TEST SORTED RESULT"); //TODO delete item .weight .value .ratio
         Console.WriteLine("===");
         Console.WriteLine(
             "{0,-10}{1,-10}{2,-15}", //formatting for columns
@@ -303,14 +305,10 @@ class Knapsack
         );
         Console.WriteLine("---");
         List<Item> displayItems = items;
-        /*for ( int i = 0; i < displayItems.Count; i++)
-        {
-
-        }*/
         foreach (Item item in items)
         {
             Console.WriteLine(
-                "{0,-10}{1,-10}{2,-5:F3}{3,-10}", //round down to 3 decimals
+                "{0,-10}{1,-10}{2,-5:F3}{3,-15}", //round down to 3 decimals
                 item.Name,
                 $"{item.Weight} / {item.Value} =",
                 item.Ratio,
@@ -387,109 +385,109 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
         Console.WriteLine("===");
-        Console.WriteLine("      BRANCH AND BOUND KNAPSACK");
+        Console.WriteLine("      BRANCH AND BOUND KNAPSACK"); //TODO tables.title
         Console.WriteLine("===");
 
-        //Ask for number of items
         int numberOfItems;
-        /*while (true)
+        numberOfItems = 5; // TODO get number of items
+        while (numberOfItems <= 0) // get new number if not int or neg or zero
         {
-            Console.Write("\nEnter number of items: ");
-            if (int.TryParse(Console.ReadLine(), out numberOfItems) && numberOfItems > 0)
+            Console.Write("\nNew number of items: ");
+            //sets input and checks for int, neg, zero
+            if (!int.TryParse(Console.ReadLine(), out numberOfItems))
             {
-                break;
+                Console.WriteLine("Not an interger"); //if user enters anything else than numbers
+                numberOfItems = 0;
             }
-            Console.WriteLine("Enter a positive interger.");
-        }*/
+            else if (numberOfItems <= 0) //if user number is neg or equal to zero
+            {
+                Console.WriteLine("Number of items cannot be negative or zero.");
+            }
+        }
+        Console.WriteLine("Number of items: " + numberOfItems);
 
         //Ask for knapsack capacity
         int capacity;
-        /*while (true)
+        capacity = 15; // TODO get capacity
+        while (capacity <= 0) // get new number if not int or neg or zero
         {
-            Console.Write("\nEnter knapsack capacity: ");
-            if (int.TryParse(Console.ReadLine(), out capacity) && capacity > 0)
+            Console.Write("\nNew capacity: ");
+            //sets input and checks for int, neg, zero
+            if (!int.TryParse(Console.ReadLine(), out capacity))
             {
-                break;
+                Console.WriteLine("Not an interger"); //if user enters anything else than numbers
+                capacity = 0;
             }
-            Console.WriteLine("Enter a positive interger.");
-        }*/
-        numberOfItems = 5;
-        Console.WriteLine("Number of items: " + numberOfItems);
-        capacity = 15;
+            else if (capacity <= 0) //if user number is neg or equal to zero
+            {
+                Console.WriteLine("Number of items cannot be negative or zero.");
+            }
+        }
         Console.WriteLine("Capacity: " + capacity);
-
-        //Create item list
-        List<Item> items = new List<Item>();
-        int[] valueArray = { 4, 2, 2, 1, 10 };
-        int[] weightArray = { 12, 2, 1, 1, 4 };
 
         Console.WriteLine("===");
         Console.WriteLine("     ORIGINAL ITEMS");
         Console.WriteLine("===");
-        Console.WriteLine("{0,-10}{1,-10}{2,-10}{3,-10}", "Name", "Weight", "Value", "Ratio");
+        Console.WriteLine(
+            "" + "{0,-10}{1,-10}{2,-10}{3,-10}",
+            "Name",
+            "Weight",
+            "Value",
+            "Ratio" //TODO rank [i]
+        );
         Console.WriteLine("---");
+
+        //Create item list
+        List<Item> items = new List<Item>();
+        int[] valueArray;
+        valueArray = [4, 2, 2, 1, 10]; // TODO get values
+
+        int[] weightArray;
+        weightArray = [12, 2, 1, 1, 4]; // TODO get weights
+
+        //all numbers must be int and non neg
+        for (int i = 0; i < valueArray.Length; i++)
+        {
+            while (valueArray[i] < 0) //numbers in array non neg and int
+            {
+                Console.Write($"Value at x{i} is negative. Enter a new value: ");
+
+                if (int.TryParse(Console.ReadLine(), out int newValue) && newValue >= 0)
+                {
+                    valueArray[i] = newValue;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input.Please enter a non-negative integer.");
+                }
+            }
+
+            while (weightArray[i] < 0) //numbers in array non neg and int
+            {
+                Console.Write($"Weight at x{i} is negative. Enter a new value: ");
+
+                if (int.TryParse(Console.ReadLine(), out int newWeight) && newWeight >= 0)
+                {
+                    weightArray[i] = newWeight;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input.Please enter a non-negative integer.");
+                }
+            }
+        }
+
         for (int i = 0; i < numberOfItems; i++)
         {
             string itemName = $"x{i + 1}";
-            int itemValue;
-            int itemWeight;
-
-            //Console.WriteLine("\n---" + itemName);
-            itemValue = valueArray[i];
-            itemWeight = weightArray[i];
-            //Console.Write($"Value: {valueArray[i]}");
-            //Console.Write($"Weight: {weightArray[i]}");
+            int itemValue = valueArray[i];
+            int itemWeight = weightArray[i];
 
             //Add item to list
             items.Add(new Item(itemName, itemWeight, itemValue));
         }
-        /*//Ask for items
-        //Get each item from user
-        for (int i = 0; i < numberOfItems; i++)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"--- Item {i + 1} ---");
 
-            //Item name
-            Console.Write("Enter item name: ");
-            string name = Console.ReadLine() ?? $"x{i + 1}";
-
-            //Item weight
-            int weight;
-
-            while (true)
-            {
-                Console.Write("Enter item weight: ");
-                if (int.TryParse(Console.ReadLine(), out weight) && weight > 0)
-                {
-                    break;
-                }
-                Console.WriteLine("Weight must be a positive interger.");
-            }
-
-            //Item value
-            int value;
-            while (true)
-            {
-                Console.Write("Enter item value: ");
-                if (int.TryParse(Console.ReadLine(), out value) && value > 0)
-                {
-                    break;
-                }
-                Console.WriteLine("Value must be zero or greater.");
-            }
-        
-            //Add item to list
-            items.Add(new Item(name, weight, value));
-        }
-
-        //Display original input
-        Console.WriteLine();
-        Console.WriteLine("===");
-        Console.WriteLine("     ORIGINAL ITEMS");
-        Console.WriteLine("===");
-        Console.WriteLine("{0,-10}{1,-10}{2,-10}{3,-10}", "Name", "Weight", "Value", "Ratio");
-        Console.WriteLine("---");*/
+        //display list
         foreach (Item item in items)
         {
             Console.WriteLine(
@@ -535,7 +533,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         var iDetails = new ImportantDetails();
         iDetails.Title = "Im";
         iDetails.Rows.Add(
-            "$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\""
+            "$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\"" // TODO best CANDIDATE found TODO implement CANDITATEs
         );
 
         //create export report
@@ -544,20 +542,10 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             AdditionalData = new AdditionalData(),
             ImportantDetails = iDetails,
             SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables, Title = "rr" },
+            Tables = new ExportTable { Tables = tables, Title = "BRANCH AND BOUND KNAPSACK" }, //TODO write display as tables
         };
 
-        /*display final answer
-        Console.WriteLine();
-        Console.WriteLine("===");
-        Console.WriteLine(
-            $"Maximum Value = {bestValue}");
-        Console.WriteLine(
-            $"Knapsack Capacity = {capacity}");
-        Console.WriteLine("===");
-        Console.WriteLine();
-        Console.Write("Export? Y/N: ");
-        Console.WriteLine("Press any key to exit");*/
+        //TODO display best canidate xi and z
 
         // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
         OtherMethods();
