@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using LprSolver.Extensions;
 using LprSolver.Models;
 
@@ -64,7 +65,7 @@ class Node
 
 class Knapsack
 {
-    private readonly List<Item> items; //arwsad
+    private readonly List<Item> items;
     private readonly int capacity;
 
     // Stores the best solution found so far
@@ -196,6 +197,11 @@ class Knapsack
                 $"{current.ItemName} = 0"
             );
 
+            //Console.WriteLine(skip); //display node skip
+            Console.WriteLine($"Problem {skip.Number} {skip.Decision}");
+            Console.WriteLine("Weight = " + skip.Weight);
+            Console.WriteLine($"Value = {skip.Value}\n");
+
             //Calculate the upper-bound for this node
             skip.Bound = CalculateBound(skip);
 
@@ -235,6 +241,11 @@ class Knapsack
                 current.Value + currentItem.Value,
                 $"{currentItem.Name} = 1"
             );
+
+            //Console.WriteLine(take); //display node take
+            Console.WriteLine($"Problem {take.Number} {take.Decision}");
+            Console.WriteLine("Weight = " + take.Weight);
+            Console.WriteLine($"Value = {take.Value}\n");
 
             /*
                 Check capacity
@@ -282,28 +293,31 @@ class Knapsack
     {
         Console.WriteLine();
         Console.WriteLine("===");
-        Console.WriteLine("     ITEMS SORTED BY VALUE/WEIGHT");
+        Console.WriteLine("     RATIO TEST");
         Console.WriteLine("===");
         Console.WriteLine(
-            "{0,-10}{1,-10}{2,-10}{3,-10}", //formatting for columns
+            "{0,-10}{1,-10}{2,-15}", //formatting for columns
             "Name",
-            "Weight",
-            "Value",
-            "Ratio"
+            "Ratio", // value/weight
+            "Rank"
         );
         Console.WriteLine("---");
         List<Item> displayItems = items;
+        /*for ( int i = 0; i < displayItems.Count; i++)
+        {
+
+        }*/
         foreach (Item item in items)
         {
             Console.WriteLine(
-                "{0,-10}{1,-10}{2,-10}{3,-10:F2}", //round down to 2 decimals
+                "{0,-10}{1,-10}{2,-5:F3}{3,-10}", //round down to 3 decimals
                 item.Name,
-                item.Weight,
-                item.Value,
-                item.Ratio
+                $"{item.Weight} / {item.Value} =",
+                item.Ratio,
+                "unresolved rank"
             );
         }
-        return displayItems; //void TODO
+        return displayItems;
     }
 
     //Display B&B nodes
@@ -373,12 +387,12 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         // Add code here to implement the Algorithm.
         // Keep in mind that the return data should match the expected output format for the application.
         Console.WriteLine("===");
-        Console.WriteLine("     KNAPSACK - BRANCH AND BOUND");
+        Console.WriteLine("      BRANCH AND BOUND KNAPSACK");
         Console.WriteLine("===");
 
         //Ask for number of items
         int numberOfItems;
-        while (true)
+        /*while (true)
         {
             Console.Write("\nEnter number of items: ");
             if (int.TryParse(Console.ReadLine(), out numberOfItems) && numberOfItems > 0)
@@ -386,11 +400,11 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 break;
             }
             Console.WriteLine("Enter a positive interger.");
-        }
+        }*/
 
         //Ask for knapsack capacity
         int capacity;
-        while (true)
+        /*while (true)
         {
             Console.Write("\nEnter knapsack capacity: ");
             if (int.TryParse(Console.ReadLine(), out capacity) && capacity > 0)
@@ -398,12 +412,38 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 break;
             }
             Console.WriteLine("Enter a positive interger.");
-        }
+        }*/
+        numberOfItems = 5;
+        Console.WriteLine("Number of items: " + numberOfItems);
+        capacity = 15;
+        Console.WriteLine("Capacity: " + capacity);
 
-        //Ask for items
         //Create item list
         List<Item> items = new List<Item>();
+        int[] valueArray = { 4, 2, 2, 1, 10 };
+        int[] weightArray = { 12, 2, 1, 1, 4 };
 
+        Console.WriteLine("===");
+        Console.WriteLine("     ORIGINAL ITEMS");
+        Console.WriteLine("===");
+        Console.WriteLine("{0,-10}{1,-10}{2,-10}{3,-10}", "Name", "Weight", "Value", "Ratio");
+        Console.WriteLine("---");
+        for (int i = 0; i < numberOfItems; i++)
+        {
+            string itemName = $"x{i + 1}";
+            int itemValue;
+            int itemWeight;
+
+            //Console.WriteLine("\n---" + itemName);
+            itemValue = valueArray[i];
+            itemWeight = weightArray[i];
+            //Console.Write($"Value: {valueArray[i]}");
+            //Console.Write($"Weight: {weightArray[i]}");
+
+            //Add item to list
+            items.Add(new Item(itemName, itemWeight, itemValue));
+        }
+        /*//Ask for items
         //Get each item from user
         for (int i = 0; i < numberOfItems; i++)
         {
@@ -438,7 +478,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 }
                 Console.WriteLine("Value must be zero or greater.");
             }
-
+        
             //Add item to list
             items.Add(new Item(name, weight, value));
         }
@@ -448,13 +488,16 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         Console.WriteLine("===");
         Console.WriteLine("     ORIGINAL ITEMS");
         Console.WriteLine("===");
+        Console.WriteLine("{0,-10}{1,-10}{2,-10}{3,-10}", "Name", "Weight", "Value", "Ratio");
+        Console.WriteLine("---");*/
         foreach (Item item in items)
         {
             Console.WriteLine(
-                $"Name: {item.Name}, "
-                    + $"Weight: {item.Weight}"
-                    + $"Value: {item.Value}"
-                    + $"Ratio: {item.Ratio:F2}" //round to 2 decimals
+                "{0,-10}{1,-10}{2,-10}{3,-10:F6}", //round to 6 decimal
+                item.Name,
+                item.Weight,
+                item.Value,
+                item.Ratio
             );
         }
 
