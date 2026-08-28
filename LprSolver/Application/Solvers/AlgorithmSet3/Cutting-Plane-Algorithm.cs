@@ -276,7 +276,9 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
                 var values = new List<string> { row.ToString() };
                 for (var column = 0; column < tableau.GetLength(1); column++)
                 {
-                    values.Add(tableau[row, column].ToString("0.###", CultureInfo.InvariantCulture));
+                    values.Add(
+                        tableau[row, column].ToString("0.###", CultureInfo.InvariantCulture)
+                    );
                 }
                 rows.Add(values);
             }

@@ -12,19 +12,13 @@ public static class ConsolePrinter
     /// <param name="exportTableData"></param>
     public static void PrintOutputData(ExportReport exportTableData)
     {
-        PrintSection(
-            exportTableData.ImportantDetails.Title,
-            exportTableData.ImportantDetails.Rows
-        );
+        PrintSection(exportTableData.ImportantDetails.Title, exportTableData.ImportantDetails.Rows);
         PrintTableSection(exportTableData.Tables);
         PrintSection(
             exportTableData.SensitivityAnalysis.Title,
             exportTableData.SensitivityAnalysis.Rows
         );
-        PrintSection(
-            exportTableData.AdditionalData.Title,
-            exportTableData.AdditionalData.Rows
-        );
+        PrintSection(exportTableData.AdditionalData.Title, exportTableData.AdditionalData.Rows);
     }
 
     private static void PrintSection(string title, List<string> rows)
