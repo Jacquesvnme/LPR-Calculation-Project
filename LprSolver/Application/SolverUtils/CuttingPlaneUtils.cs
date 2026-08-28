@@ -8,7 +8,7 @@ public static class CuttingPlaneUtils
     private const double TOLERANCE = 0.0000001;
 
     // The target fractional part for selecting a cutting row is 0.5.
-    // The target closer to this value will be used and selected.
+    // The closer target to this value will be used and selected.
     private const double TARGET_FRACTIONAL = 0.5;
 
     public static (bool Success, string Message) InitialCuttingPlaneValidation(
@@ -33,19 +33,13 @@ public static class CuttingPlaneUtils
 
         if (rowCount < 2 || columnCount < 2)
         {
-            return (
-                false,
-                "Objective row, constrain missing or RHS column missing."
-            );
+            return (false, "Objective row, constrain missing or RHS column missing.");
         }
 
         var rightHandSideColumn = columnCount - 1;
         if (columnNames.Count != rightHandSideColumn)
         {
-            return (
-                false,
-                "Column name count does not match column count."
-            );
+            return (false, "Column name count does not match column count.");
         }
 
         return (true, "No issues.");
@@ -128,6 +122,12 @@ public static class CuttingPlaneUtils
         );
     }
 
+    /// <summary>
+    /// Creates a Gomory fractional cut from the specified tableau.
+    /// This means, it adds a new constraint which removed the current fractional
+    /// solution without excluding any valid integer solutions.
+    /// Returns a new tableau with the cut row and slack-variable column appended.
+    /// </summary>
     public static (
         bool Success,
         string Message,
@@ -140,6 +140,7 @@ public static class CuttingPlaneUtils
         int cutNumber
     )
     {
+        // Basic Validation
         var validation = InitialCuttingPlaneValidation(tableau, columnNames);
         if (!validation.Success)
         {
@@ -150,24 +151,16 @@ public static class CuttingPlaneUtils
         var columnCount = tableau.GetLength(1);
         var rightHandSideColumn = columnCount - 1;
 
+        // Validate the cutting row and cut number
         if (cuttingRow < 1 || cuttingRow >= rowCount)
         {
-            return (
-                false,
-                "The cutting row must identify a constraint row in the tableau.",
-                null,
-                null
-            );
+            return (false, "Cut row should point to a constrain row in the tableau.", null, null);
         }
 
+        // Validate the cut number
         if (cutNumber < 1)
         {
-            return (
-                false,
-                "The cut number must be greater than zero.",
-                null,
-                null
-            );
+            return (false, "Cut number should be greater than zero.", null, null);
         }
 
         var fractionalRightHandSide = GetFractionalPart(tableau[cuttingRow, rightHandSideColumn]);
@@ -175,17 +168,17 @@ public static class CuttingPlaneUtils
         {
             return (
                 false,
-                $"Cutting row {cuttingRow} has an integral RHS and cannot produce a fractional cut.",
+                $"Cutting row {cuttingRow} has an valid RHS and cannot be cut.",
                 null,
                 null
             );
         }
 
-        // Insert the new cut-variable column immediately before the RHS column,
-        // and append the generated cut as the final constraint row.
-        var cutColumn = rightHandSideColumn;
+        // Add the new slack-variable column before the RHS column,
+        // and add the cut as the final constraint row.
+        var slackVariableColumn = rightHandSideColumn;
         var newRightHandSideColumn = columnCount;
-        var cutRow = rowCount;
+        var newConstraintRow = rowCount;
         var cutTableau = new double[rowCount + 1, columnCount + 1];
 
         for (var row = 0; row < rowCount; row++)
@@ -195,26 +188,27 @@ public static class CuttingPlaneUtils
                 cutTableau[row, column] = tableau[row, column];
             }
 
-            cutTableau[row, cutColumn] = 0;
+            cutTableau[row, slackVariableColumn] = 0;
             cutTableau[row, newRightHandSideColumn] = tableau[row, rightHandSideColumn];
         }
 
         // Gomory fractional cut:
-        // -sum(fractional coefficient * variable) + cutVariable = -fractional RHS.
+        // -sum(fractional coefficient * variable) + slackVariable = -fractional RHS.
         // The negative RHS makes the new tableau suitable for a dual-simplex pass.
         for (var column = 0; column < rightHandSideColumn; column++)
         {
-            cutTableau[cutRow, column] = -GetFractionalPart(tableau[cuttingRow, column]);
+            cutTableau[newConstraintRow, column] = -GetFractionalPart(tableau[cuttingRow, column]);
         }
 
-        cutTableau[cutRow, cutColumn] = 1;
-        cutTableau[cutRow, newRightHandSideColumn] = -fractionalRightHandSide;
+        cutTableau[newConstraintRow, slackVariableColumn] = 1;
+        cutTableau[newConstraintRow, newRightHandSideColumn] = -fractionalRightHandSide;
 
-        var updatedColumnNames = new List<string>(columnNames) { $"G{cutNumber}" };
+        // Row zero is the objective, so the new row index is also its constraint number.
+        var updatedColumnNames = new List<string>(columnNames) { $"S{newConstraintRow}" };
 
         return (
             true,
-            $"Gomory fractional cut G{cutNumber} was added from row {cuttingRow}.",
+            $"Gomory fractional cut {cutNumber} was added from row {cuttingRow} using slack variable S{newConstraintRow}.",
             cutTableau,
             updatedColumnNames
         );
