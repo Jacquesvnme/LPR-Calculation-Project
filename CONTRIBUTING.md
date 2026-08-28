@@ -1,3 +1,4 @@
 # Contributions
 
-To be listed...
+- Sarelda Simoné Nel
+- Riegardt Christopher Weich
