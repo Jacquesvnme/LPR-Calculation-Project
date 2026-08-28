@@ -15,6 +15,7 @@ public sealed class Solvers
     private ISolverSelection _solver = null!;
     private IExporter _exporter = null!;
 
+    #region Required Services & Methods
     /// <summary>
     /// Runs before each test method to create the dependency-injection container
     /// and resolve the services required by the test.
@@ -38,27 +39,68 @@ public sealed class Solvers
     /// </summary>
     [TestCleanup]
     public void CleanUp() => _serviceProvider.Dispose();
+    #endregion
 
     /// <summary>
     /// Imports the default example model from the configured location and runs it
-    /// through the primal simplex solver without using the interactive menu.
+    /// through the specified solver without using the interactive menu's.
     /// </summary>
+    #region Test Methods
     [TestMethod]
     public async Task PrimalSimplex()
     {
         await DefaultSolver(SolverAlgorithm.PrimalSimplex);
     }
 
-    /// <summary>
-    /// Imports the default example model from the configured location and runs it
-    /// through the cutting plane solver without using the interactive menu.
-    /// </summary>
     [TestMethod]
     public async Task CuttingPlane()
     {
         await DefaultSolver(SolverAlgorithm.CuttingPlane);
     }
 
+    [TestMethod]
+    public async Task BranchAndBound()
+    {
+        await DefaultSolver(SolverAlgorithm.BranchAndBound);
+    }
+
+    [TestMethod]
+    public async Task BranchAndBoundKnapsack()
+    {
+        await DefaultSolver(SolverAlgorithm.BranchAndBoundKnapsack);
+    }
+    #endregion
+
+    /// <summary>
+    /// Unimplemented methods signifying that the below algorithms have not beed developed yet.
+    /// </summary>
+    #region Unimplemented Test Methods
+    [TestMethod]
+    public async Task PrimalSimplexRevised()
+    {
+        throw new NotImplementedException("Not implemented");
+    }
+
+    [TestMethod]
+    public async Task BranchAndBoundRevised()
+    {
+        throw new NotImplementedException("Not implemented");
+    }
+
+    [TestMethod]
+    public async Task CuttingPlaneRevised()
+    {
+        throw new NotImplementedException("Not implemented");
+    }
+
+    [TestMethod]
+    public async Task NonLinear()
+    {
+        throw new NotImplementedException("Not implemented");
+    }
+    #endregion
+
+    #region Solver Method
     private async Task DefaultSolver(SolverAlgorithm solverAlgorithm)
     {
         var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
@@ -81,16 +123,7 @@ public sealed class Solvers
 
         Assert.IsTrue(exportResult.IsSuccess, exportResult.Message);
     }
-
-    /// <summary>
-    /// Imports the default example model from the configured location and runs it
-    /// through the primal simplex solver without using the interactive menu.
-    /// </summary>
-    [TestMethod]
-    public async Task PrimalSimplexRevised()
-    {
-        throw new NotImplementedException("Still need to implement this");
-    }
+    #endregion
 
     #region Utility Methods
     private async Task<(string ImportFilePath, string ExportFilePath)> GetAbsoluteFilePaths()
