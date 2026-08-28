@@ -1,4 +1,7 @@
-﻿using LprSolver.Models;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
+using LprSolver.Models;
+using Spectre.Console;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet4;
 
@@ -21,7 +24,7 @@ class Item
     public string Name { get; set; } //name of the item e.g. xi = where i = 1,2,...
     public double Weight { get; set; } //weight of the item
     public double Value { get; set; } //value or profit of the item
-    
+
     //Value-to-Weight ratio
     //Used when calculating the upper bound
     public double Ratio
@@ -35,17 +38,17 @@ class Item
         Weight = weight; //TODO change to double
         Value = value; //TODO change to double
     }
-} 
+}
+
 class ItemRanked : Item
 {
     public int Rank { get; set; } = 0; //for the ratio test
-    public ItemRanked(string name, double weight, double value, int rank) 
+
+    public ItemRanked(string name, double weight, double value, int rank)
         : base(name, weight, value) //constructure
     {
         Rank = rank;
     }
-
-
 }
 
 // One node of the Branch and Bound Tree
@@ -59,19 +62,51 @@ class Node
     public double Bound { get; set; } // Upperbound: Maximum value that could be obtained from this node
     public string Decision { get; set; } //Include / Exclude item
 
-    public Node(string number, int level, string itemName, double weight, double value, string decision)
+    public Node(
+        string number,
+        int level,
+        string itemName,
+        double weight,
+        double value,
+        string decision
+    )
     {
         Number = number;
         Level = level;
         ItemName = itemName;
-        Weight = weight; //TODO change to double
-        Value = value; //TODO change to double
+        Weight = weight;
+        Value = value;
         Decision = decision;
+    }
+}
+
+public class KnapsackNodeExport
+{
+    public string Node { get; set; } = "";
+    public int Level { get; set; }
+    public string Decision { get; set; } = "";
+    public double Weight { get; set; }
+    public double Value { get; set; }
+    public double Bound { get; set; }
+
+    public override string ToString()
+    {
+        return string.Format(
+            "{0,-10}{1,-10}{2,-25}{3,-10:F2}{4,-10:F2}{5,-10:F2}",
+            Node,
+            Level,
+            Decision,
+            Weight,
+            Value,
+            Bound
+        );
     }
 }
 
 class Knapsack
 {
+    //create table data for export
+    List<object> tables = new List<object>();
     private readonly List<Item> items;
     private readonly int capacity;
 
@@ -198,7 +233,7 @@ class Knapsack
             Node skip = new Node(
                 excludeNumber,
                 nextLevel,
-                current.ItemName, //current item
+                item.Name, //current item
                 current.Weight,
                 current.Value,
                 $"{current.ItemName} = 0"
@@ -243,13 +278,14 @@ class Knapsack
             Node take = new Node(
                 includeNumber,
                 nextLevel,
-                currentItem.Name,
+                item.Name,
                 current.Weight + currentItem.Weight,
                 current.Value + currentItem.Value,
                 $"{currentItem.Name} = 1"
             );
 
             //Console.WriteLine(take); //display node take
+            Console.WriteLine($"Problem {take.Number} {take.Decision}");
             Console.WriteLine($"Problem {take.Number} {take.Decision}");
             Console.WriteLine("Weight = " + take.Weight);
             Console.WriteLine($"Value = {take.Value}\n");
@@ -298,63 +334,67 @@ class Knapsack
     //Display sorted items
     public List<Item> DisplayItems()
     {
-        Console.WriteLine();
-        Console.WriteLine("===");
-        Console.WriteLine("     RATIO TEST SORTED RESULT"); //TODO delete item .weight .value .ratio
-        Console.WriteLine("===");
-        Console.WriteLine(
-            "{0,-10}{1,-10}{2,-15}", //formatting for columns
-            "Name",
-            "Ratio", // value/weight
-            "Rank"
+        tables.Add("");
+        tables.Add("===");
+        tables.Add("     RATIO TEST SORTED RESULT"); //TODO delete item .weight .value .ratio
+        tables.Add("===");
+        tables.Add(
+            string.Format("{0,-10}{1,-15}{2,-10}{3,-10}", "Name", "Value / Weight", "Ratio", "Rank")
         );
-        Console.WriteLine("---");
-        List<Item> displayItems = items;
+        tables.Add("---");
+        int rank = 1;
         foreach (Item item in items)
         {
-            Console.WriteLine(
-                "{0,-10}{1,-10}{2,-5:F3}{3,-15}", //round down to 3 decimals
-                item.Name,
-                $"{item.Weight} / {item.Value} =",
-                item.Ratio,
-                "unresolved rank"
+            tables.Add(
+                string.Format(
+                    "{0,-10}{1,-15}{2,-10:F3}{3,-10}",
+                    item.Name,
+                    $"{item.Weight} / {item.Value} =",
+                    item.Ratio,
+                    rank++
+                )
             );
         }
-        return displayItems;
+        return items;
     }
 
     //Display B&B nodes
-    public void DisplayNodes()
+    public List<Node> DisplayNodes()
     {
-        Console.WriteLine();
-        Console.WriteLine("===");
-        Console.WriteLine("     BRANCH AND BOUND KNAPSACK NODES");
-        Console.WriteLine("===");
-        Console.WriteLine(
-            "{0,-10}{1,-12}{2,-25}{3,-10}{4,-10}{5,-10}",
-            "Node",
-            "Item",
-            "Decision",
-            "Weight",
-            "Value",
-            "Bound"
+        tables.Add("");
+        tables.Add("===");
+        tables.Add("     BRANCH AND BOUND KNAPSACK NODES");
+        tables.Add("===");
+        tables.Add(
+            string.Format(
+                "{0,-10}{1,-12}{2,-25}{3,-10}{4,-10}{5,-10}",
+                "Node",
+                "Item",
+                "Decision",
+                "Weight",
+                "Value",
+                "Bound"
+            )
         );
-        Console.WriteLine("---");
+        tables.Add("---");
 
         foreach (Node node in allNodes)
         {
             string nodeNumber = string.IsNullOrEmpty(node.Number) ? "Root" : node.Number;
 
-            Console.WriteLine(
-                "{0,-10} {1,-12} {2,-25} {3,-10} {4,-10} {5,-10:F2}",
-                nodeNumber,
-                node.ItemName,
-                node.Decision,
-                node.Weight,
-                node.Value,
-                node.Bound
+            tables.Add(
+                string.Format(
+                    "{0,-10} {1,-12} {2,-25} {3,-10} {4,-10} {5,-10:F2}",
+                    nodeNumber,
+                    node.ItemName,
+                    node.Decision,
+                    node.Weight,
+                    node.Value,
+                    node.Bound
+                )
             );
         }
+        return allNodes;
     }
 
     //returns all nodes created during the B&B Knapsack process
@@ -383,6 +423,9 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
     /// <summary>
     /// Main method to execute the Algorithm.
     /// </summary>
+    //create table data for export
+    List<object> tables = new List<object>();
+
     public async Task<(bool Success, string Message, ExportReport exportTableData)> Execute(
         LinearProgram linearProgram
     )
@@ -408,7 +451,8 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 Console.WriteLine("Number of items cannot be negative or zero.");
             }
         }
-        Console.WriteLine("Number of items: " + numberOfItems);
+        //Console.WriteLine("Number of items: " + numberOfItems);
+        tables.Add($"Number of Items: {numberOfItems}"); //add to export
 
         //Ask for knapsack capacity
         if (
@@ -435,19 +479,16 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 Console.WriteLine("Number of items cannot be negative or zero.");
             }
         }
-        Console.WriteLine("Capacity: " + capacity);
+        //Console.WriteLine("Capacity: " + capacity);
+        tables.Add($"Capacity: {capacity}");
 
-        Console.WriteLine("===");
-        Console.WriteLine("     ORIGINAL ITEMS");
-        Console.WriteLine("===");
-        Console.WriteLine(
-            "" + "{0,-10}{1,-10}{2,-10}{3,-10}",
-            "Name",
-            "Weight",
-            "Value",
-            "Ratio" //TODO rank [i]
+        tables.Add("===");
+        tables.Add("     ORIGINAL ITEMS");
+        tables.Add("===");
+        tables.Add(
+            string.Format("{0,-10}{1,-10}{2,-10}{3,-15}", "Name", "Weight", "Value", "Ratio")
         );
-        Console.WriteLine("---");
+        tables.Add("---");
 
         //Create item list
         List<Item> items = new List<Item>();
@@ -457,9 +498,9 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             .ToArray();
         //get constraints
         int[] weightArray = linearProgram
-                .Constraints.First()
-                .Coefficients.Select(value => Convert.ToInt32(value))
-                .ToArray();
+            .Constraints.First()
+            .Coefficients.Select(value => Convert.ToInt32(value))
+            .ToArray();
 
         //all numbers must be int and non neg   //TODO allow non integers
         for (int i = 0; i < valueArray.Length; i++)
@@ -506,12 +547,14 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         //display list
         foreach (Item item in items)
         {
-            Console.WriteLine(
-                "{0,-10}{1,-10}{2,-10}{3,-10:F6}", //round to 6 decimal
-                item.Name,
-                item.Weight,
-                item.Value,
-                item.Ratio
+            tables.Add(
+                string.Format(
+                    "{0,-10}{1,-10}{2,-10}{3,-10:F6}", //round to 6 decimal
+                    item.Name,
+                    item.Weight,
+                    item.Value,
+                    item.Ratio
+                )
             );
         }
 
@@ -527,14 +570,26 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         //display branch and bound knapsack tree
         List<Node> nodes = solver.GetAllNodes();
 
-        //create table data
-        var tables = new List<object>();
+        nodes = solver.DisplayNodes();
+
+        //node headers
+        tables.Add(
+            string.Format(
+                "{0,-10}{1,-10}{2,-25}{3,-10}{4,-10}{5,-10}",
+                "Node",
+                "Level",
+                "Decision",
+                "Weight",
+                "Value",
+                "Bound"
+            )
+        );
 
         //add each B&B node to the table
         foreach (Node node in nodes)
         {
             tables.Add(
-                new
+                new KnapsackNodeExport
                 {
                     Node = string.IsNullOrEmpty(node.Number) ? "ROOT" : node.Number,
                     Level = node.Level,
@@ -545,6 +600,11 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 }
             );
         }
+
+        //show values in export
+        //tables.Add
+
+        //Display
 
         var exportReport = ExportData(tables, nodes.Count, bestValue);
         //TODO display best canidate xi and z
@@ -583,7 +643,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
                 Title = "Sensitivity Analysis Title",
                 Rows = sensitivityAnalysis,
             },
-            Tables = new ExportTable { Tables = tables, Title = "Export Tables Title" },
+            Tables = new ExportTable { Tables = tables, Title = "Branch and Bound Knapsack" },
         };
 
         return exportReport;
