@@ -108,8 +108,10 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             // Bound: this node's relaxation can only get worse (or equal) as more
             // constraints are added below it, so if it's already no better than the
             // best integer solution found so far, there's no point exploring it.
-            if (bestObjectiveValue.HasValue &&
-                nodeTableau[0, rhsColumnIndex] >= bestObjectiveValue.Value - 1e-9)
+            if (
+                bestObjectiveValue.HasValue
+                && nodeTableau[0, rhsColumnIndex] >= bestObjectiveValue.Value - 1e-9
+            )
             {
                 continue;
             }
@@ -292,7 +294,9 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             Tables = Export_ExportTable(simplexTables, tableColumnNames),
         };
 
-        return Task.FromResult((true, "Branch and bound simplex tables created successfully.", exportReport));
+        return Task.FromResult(
+            (true, "Branch and bound simplex tables created successfully.", exportReport)
+        );
     }
 
     private AdditionalData Export_AdditionalData(List<PivotStep> pivotHistory)
@@ -349,7 +353,10 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
         List<List<string>> tableColumnNames
     )
     {
-        var result = new ExportTable { Title = "Export Tables for Branch And Bound Simplex Solver" };
+        var result = new ExportTable
+        {
+            Title = "Export Tables for Branch And Bound Simplex Solver",
+        };
 
         for (var tableIndex = 0; tableIndex < simplexTables.Count; tableIndex++)
         {
