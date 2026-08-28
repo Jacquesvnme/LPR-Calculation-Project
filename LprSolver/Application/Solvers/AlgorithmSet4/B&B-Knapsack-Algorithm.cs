@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using LprSolver.Extensions;
-using LprSolver.Models;
+﻿using LprSolver.Models;
 
 namespace LprSolver.Application.Solvers.AlgorithmSet4;
 
@@ -530,32 +524,46 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             );
         }
 
-        var iDetails = new ImportantDetails();
-        iDetails.Title = "Im";
-        iDetails.Rows.Add(
-            "$\"Maximum value = {bestValue}.\" + $\"Node generated = {nodes.Count}\"" // TODO best CANDIDATE found TODO implement CANDITATEs
-        );
-
-        //create export report
-        var exportReport = new ExportReport
-        {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = iDetails,
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables, Title = "BRANCH AND BOUND KNAPSACK" }, //TODO write display as tables
-        };
-
+        var exportReport = ExportData(tables, nodes.Count, bestValue);
         //TODO display best canidate xi and z
-
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
 
         //return result
         return new(true, $"Branch and Bound Knapsack completed.", exportReport);
     }
 
-    private void OtherMethods()
+    public ExportReport ExportData(List<object> tables, int nodeCount, int bestValue)
     {
-        //dummy method
+        List<string> importantDetails = new();
+        List<string> additionalData = new();
+        List<string> sensitivityAnalysis = new();
+
+        importantDetails.Add(
+            $"Maximum value = {bestValue}. Node generated = {nodeCount}" // TODO best CANDIDATE found TODO implement CANDITATEs
+        );
+
+        additionalData.Add("Add new entries that will be exported");
+        sensitivityAnalysis.Add("Add new entries that will be exported");
+
+        var exportReport = new ExportReport
+        {
+            AdditionalData = new AdditionalData()
+            {
+                Title = "Additional Data Title",
+                Rows = additionalData,
+            },
+            ImportantDetails = new ImportantDetails()
+            {
+                Title = "Important Details Title",
+                Rows = importantDetails,
+            },
+            SensitivityAnalysis = new SensitivityAnalysis()
+            {
+                Title = "Sensitivity Analysis Title",
+                Rows = sensitivityAnalysis,
+            },
+            Tables = new ExportTable { Tables = tables, Title = "Export Tables Title" },
+        };
+
+        return exportReport;
     }
 }
