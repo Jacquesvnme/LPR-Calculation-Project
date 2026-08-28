@@ -160,11 +160,6 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
         List<string> columnNames
     )
     {
-        ArgumentNullException.ThrowIfNull(simplexTables);
-        ArgumentNullException.ThrowIfNull(pivotColumns);
-        ArgumentNullException.ThrowIfNull(pivotRows);
-        ArgumentNullException.ThrowIfNull(columnNames);
-
         var exportReport = new ExportReport
         {
             AdditionalData = Export_AdditionalData(pivotColumns, pivotRows, columnNames),
@@ -172,6 +167,8 @@ public class Primal_Simplex_Algorithm : IPrimal_Simplex_Algorithm
             SensitivityAnalysis = Export_SensitivityAnalysis(),
             Tables = Export_ExportTable(simplexTables, columnNames),
         };
+
+        ConsolePrinter.PrintOutputData(exportReport);
 
         return Task.FromResult((true, "Primal simplex tables created successfully.", exportReport));
     }
