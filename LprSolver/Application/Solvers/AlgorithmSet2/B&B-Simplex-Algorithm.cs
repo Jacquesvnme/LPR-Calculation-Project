@@ -35,11 +35,16 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
         LinearProgram linearProgram
     )
     {
-        var (simplexTables, tableColumnNames, pivotHistory, columnNames) = SolveBBSimplex(
+        var (simplexTables, tableColumnNames, pivotHistory, solutionSummary) = SolveBBSimplex(
             linearProgram
         );
 
-        return await ExportBBSimplex(simplexTables, tableColumnNames, pivotHistory, columnNames);
+        return await ExportBBSimplex(
+            simplexTables,
+            tableColumnNames,
+            pivotHistory,
+            solutionSummary
+        );
     }
 
     /// <summary>
@@ -95,6 +100,7 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
 
         double? bestObjectiveValue = null;
         List<string>? bestColumnNames = null;
+        double[,]? bestTableau = null;
 
         var nodesExplored = 0;
 
@@ -127,6 +133,7 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
                 {
                     bestObjectiveValue = objectiveValue;
                     bestColumnNames = nodeColumnNames;
+                    bestTableau = (double[,])nodeTableau.Clone();
 
                     tables.Add((double[,])nodeTableau.Clone());
                     tableColumnNames.Add(new List<string>(nodeColumnNames));
@@ -190,7 +197,74 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             );
         }
 
-        return (tables, tableColumnNames, pivotHistory, bestColumnNames);
+        var solutionSummary = BuildSolutionSummary(
+            bestTableau!,
+            bestColumnNames!,
+            bestObjectiveValue!.Value,
+            linearProgram.Objective.Direction
+        );
+
+        return (tables, tableColumnNames, pivotHistory, solutionSummary);
+    }
+
+    private List<string> BuildSolutionSummary(
+        double[,] tableau,
+        List<string> columnNames,
+        double rawObjectiveValue,
+        OptimizationDirection direction
+    )
+    {
+        var objectiveValue =
+            direction == OptimizationDirection.Maximize ? -rawObjectiveValue : rawObjectiveValue;
+
+        var summary = new List<string>
+        {
+            "Status: Optimal integer solution found",
+            $"Optimal value (Z): {objectiveValue.ToString("0.####", CultureInfo.InvariantCulture)}",
+        };
+
+        var rowCount = tableau.GetLength(0);
+        var rhsColumnIndex = tableau.GetLength(1) - 1;
+
+        for (var column = 0; column < rhsColumnIndex; column++)
+        {
+            if (!columnNames[column].StartsWith("X", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var value = 0.0;
+            for (var row = 1; row < rowCount; row++)
+            {
+                if (
+                    Math.Abs(tableau[row, column] - 1.0) < 1e-9
+                    && IsUnitColumn(tableau, row, column)
+                )
+                {
+                    value = tableau[row, rhsColumnIndex];
+                    break;
+                }
+            }
+
+            summary.Add(
+                $"{columnNames[column]} = {value.ToString("0.####", CultureInfo.InvariantCulture)}"
+            );
+        }
+
+        return summary;
+    }
+
+    private static bool IsUnitColumn(double[,] tableau, int row, int column)
+    {
+        var rowCount = tableau.GetLength(0);
+        for (var r = 0; r < rowCount; r++)
+        {
+            if (r != row && Math.Abs(tableau[r, column]) > 1e-9)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>
@@ -278,18 +352,18 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
         List<double[,]> simplexTables,
         List<List<string>> tableColumnNames,
         List<PivotStep> pivotHistory,
-        List<string> columnNames
+        List<string> solutionSummary
     )
     {
         ArgumentNullException.ThrowIfNull(simplexTables);
         ArgumentNullException.ThrowIfNull(tableColumnNames);
         ArgumentNullException.ThrowIfNull(pivotHistory);
-        ArgumentNullException.ThrowIfNull(columnNames);
+        ArgumentNullException.ThrowIfNull(solutionSummary);
 
         var exportReport = new ExportReport
         {
             AdditionalData = Export_AdditionalData(pivotHistory),
-            ImportantDetails = Export_ImportantDetails(pivotHistory),
+            ImportantDetails = Export_ImportantDetails(pivotHistory, solutionSummary),
             SensitivityAnalysis = Export_SensitivityAnalysis(),
             Tables = Export_ExportTable(simplexTables, tableColumnNames),
         };
@@ -318,12 +392,19 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
         return additionalData;
     }
 
-    private ImportantDetails Export_ImportantDetails(List<PivotStep> pivotHistory)
+    private ImportantDetails Export_ImportantDetails(
+        List<PivotStep> pivotHistory,
+        List<string> solutionSummary
+    )
     {
         var importantDetails = new ImportantDetails
         {
             Title = "Important Details for Branch And Bound Simplex Solver",
         };
+
+        importantDetails.Rows.AddRange(solutionSummary);
+        importantDetails.Rows.Add(string.Empty);
+        importantDetails.Rows.Add("Pivot history:");
 
         for (int i = 0; i < pivotHistory.Count; i++)
         {
