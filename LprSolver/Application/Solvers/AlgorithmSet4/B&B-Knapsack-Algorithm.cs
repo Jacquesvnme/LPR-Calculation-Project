@@ -21,6 +21,7 @@ class Item
     public string Name { get; set; } //name of the item e.g. xi = where i = 1,2,...
     public int Weight { get; set; } //weight of the item
     public int Value { get; set; } //value or profit of the item
+    //TODO add rank
 
     //Value-to-Weight ratio
     //Used when calculating the upper bound
@@ -32,8 +33,8 @@ class Item
     public Item(string name, int weight, int value) //constructure
     {
         Name = name;
-        Weight = weight;
-        Value = value;
+        Weight = weight; //TODO change to double
+        Value = value; //TODO change to double
     }
 }
 
@@ -53,8 +54,8 @@ class Node
         Number = number;
         Level = level;
         ItemName = itemName;
-        Weight = weight;
-        Value = value;
+        Weight = weight; //TODO change to double
+        Value = value; //TODO change to double
         Decision = decision;
     }
 }
@@ -440,16 +441,17 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
 
         //Create item list
         List<Item> items = new List<Item>();
+        //get objectives
         int[] valueArray = linearProgram
             .Objective.Objectives.Select(value => Convert.ToInt32(value))
             .ToArray();
-
+        //get constraints
         int[] weightArray = linearProgram
                 .Constraints.First()
                 .Coefficients.Select(value => Convert.ToInt32(value))
                 .ToArray();
 
-        //all numbers must be int and non neg
+        //all numbers must be int and non neg   //TODO allow non integers
         for (int i = 0; i < valueArray.Length; i++)
         {
             while (valueArray[i] < 0) //numbers in array non neg and int
@@ -488,7 +490,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
             int itemWeight = weightArray[i];
 
             //Add item to list
-            items.Add(new Item(itemName, itemWeight, itemValue));
+            items.Add(new Item(itemName, itemWeight, itemValue)); //TODO change to Item( string, double, double)
         }
 
         //display list
