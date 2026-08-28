@@ -62,4 +62,90 @@ public static class DualSimplexUtils
 
     #endregion
 
+    #region Pivot Selection
+
+    /// <summary>
+    /// Selects the constraint row with the most negative RHS value.
+    /// Returns -1 when every RHS value is nonnegative within tolerance.
+    /// </summary>
+    public static (bool Success, string Message, int PivotRow) FindPivotRow(double[,] tableau)
+    {
+        // Basic validation
+        if (tableau == null)
+        {
+            return (false, "Required data cannot be null.", -1);
+        }
+
+        var rightHandSideColumn = tableau.GetLength(1) - 1;
+        var pivotRow = -1;
+
+        // The most negative RHS value is assigned to the small tolerance value.
+        // This gets overridden by any negative RHS value in the tableau.
+        var mostNegativeRightHandSide = -TOLERANCE;
+
+        for (var row = 1; row < tableau.GetLength(0); row++)
+        {
+            // Finds the most negative RHS value and its row index.
+            var rightHandSide = tableau[row, rightHandSideColumn];
+            if (rightHandSide < mostNegativeRightHandSide)
+            {
+                mostNegativeRightHandSide = rightHandSide;
+                pivotRow = row;
+            }
+        }
+
+        return new(true, string.Empty, pivotRow);
+    }
+
+    /// <summary>
+    /// Selects an entering column from the negative coefficients in the pivot row using
+    /// the smallest dual-simplex ratio. Returns -1 when no column can enter.
+    /// </summary>
+    public static (bool Success, string Message, int PivotColumn) FindPivotColumn(
+        double[,] tableau,
+        int pivotRow
+    )
+    {
+        // Basic validation
+        if (tableau == null)
+        {
+            return new(false, "The tableau cannot be null.", -1);
+        }
+
+        if (pivotRow < 1 || pivotRow >= tableau.GetLength(0))
+        {
+            return new(false, "The pivot row must contain a constraint row.", -1);
+        }
+
+        var rightHandSideColumn = tableau.GetLength(1) - 1;
+        var pivotColumn = -1;
+        var smallestRatio = double.PositiveInfinity;
+
+        for (var column = 0; column < rightHandSideColumn; column++)
+        {
+            var rowCoefficient = tableau[pivotRow, column];
+            // Only a negative coefficient can increase the leaving row's RHS after pivoting.
+            if (rowCoefficient >= -TOLERANCE)
+            {
+                continue;
+            }
+
+            // Validation permits tiny negative objective coefficients within tolerance.
+            // Treat them as zero before calculating the ratio.
+            var objectiveCoefficient = Math.Max(0, tableau[0, column]);
+            var ratio = objectiveCoefficient / -rowCoefficient;
+
+            // Find the smallest ratio and its column index.
+            if (ratio < smallestRatio - TOLERANCE)
+            {
+                smallestRatio = ratio;
+                pivotColumn = column;
+            }
+        }
+
+        return new(true, string.Empty, pivotColumn);
+    }
+
+    #endregion
+
 }
