@@ -440,11 +440,14 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
 
         //Create item list
         List<Item> items = new List<Item>();
-        int[] valueArray;
-        valueArray = [4, 2, 2, 1, 10]; // TODO get values
+        int[] valueArray = linearProgram
+            .Objective.Objectives.Select(value => Convert.ToInt32(value))
+            .ToArray();
 
-        int[] weightArray;
-        weightArray = [12, 2, 1, 1, 4]; // TODO get weights
+        int[] weightArray = linearProgram
+                .Constraints.First()
+                .Coefficients.Select(value => Convert.ToInt32(value))
+                .ToArray();
 
         //all numbers must be int and non neg
         for (int i = 0; i < valueArray.Length; i++)
