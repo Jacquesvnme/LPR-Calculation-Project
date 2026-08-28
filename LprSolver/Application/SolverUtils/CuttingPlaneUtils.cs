@@ -128,6 +128,98 @@ public static class CuttingPlaneUtils
         );
     }
 
+    public static (
+        bool Success,
+        string Message,
+        double[,] Tableau,
+        List<string> ColumnNames
+    ) AddGomoryFractionalCut(
+        double[,] tableau,
+        List<string> columnNames,
+        int cuttingRow,
+        int cutNumber
+    )
+    {
+        var validation = InitialCuttingPlaneValidation(tableau, columnNames);
+        if (!validation.Success)
+        {
+            return (false, validation.Message, null, null);
+        }
+
+        var rowCount = tableau.GetLength(0);
+        var columnCount = tableau.GetLength(1);
+        var rightHandSideColumn = columnCount - 1;
+
+        if (cuttingRow < 1 || cuttingRow >= rowCount)
+        {
+            return (
+                false,
+                "The cutting row must identify a constraint row in the tableau.",
+                null,
+                null
+            );
+        }
+
+        if (cutNumber < 1)
+        {
+            return (
+                false,
+                "The cut number must be greater than zero.",
+                null,
+                null
+            );
+        }
+
+        var fractionalRightHandSide = GetFractionalPart(tableau[cuttingRow, rightHandSideColumn]);
+        if (fractionalRightHandSide == 0)
+        {
+            return (
+                false,
+                $"Cutting row {cuttingRow} has an integral RHS and cannot produce a fractional cut.",
+                null,
+                null
+            );
+        }
+
+        // Insert the new cut-variable column immediately before the RHS column,
+        // and append the generated cut as the final constraint row.
+        var cutColumn = rightHandSideColumn;
+        var newRightHandSideColumn = columnCount;
+        var cutRow = rowCount;
+        var cutTableau = new double[rowCount + 1, columnCount + 1];
+
+        for (var row = 0; row < rowCount; row++)
+        {
+            for (var column = 0; column < rightHandSideColumn; column++)
+            {
+                cutTableau[row, column] = tableau[row, column];
+            }
+
+            cutTableau[row, cutColumn] = 0;
+            cutTableau[row, newRightHandSideColumn] = tableau[row, rightHandSideColumn];
+        }
+
+        // Gomory fractional cut:
+        // -sum(fractional coefficient * variable) + cutVariable = -fractional RHS.
+        // The negative RHS makes the new tableau suitable for a dual-simplex pass.
+        for (var column = 0; column < rightHandSideColumn; column++)
+        {
+            cutTableau[cutRow, column] = -GetFractionalPart(tableau[cuttingRow, column]);
+        }
+
+        cutTableau[cutRow, cutColumn] = 1;
+        cutTableau[cutRow, newRightHandSideColumn] = -fractionalRightHandSide;
+
+        var updatedColumnNames = new List<string>(columnNames) { $"G{cutNumber}" };
+
+        return (
+            true,
+            $"Gomory fractional cut G{cutNumber} was added from row {cuttingRow}.",
+            cutTableau,
+            updatedColumnNames
+        );
+    }
+
     /// <summary>
     /// Finds the basic-variable column for the given cutting row.
     /// </summary>

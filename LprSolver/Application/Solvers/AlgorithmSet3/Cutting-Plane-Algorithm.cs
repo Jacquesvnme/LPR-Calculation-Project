@@ -112,6 +112,39 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
             {
                 break;
             }
+
+            // Fail-safe, program has reached max iterations
+            if (cutNumber > MAXIMUM_ITERATIONS)
+            {
+                return new(
+                    false,
+                    $"The cutting-plane algorithm exceeded {MAXIMUM_ITERATIONS} cuts.",
+                    tables,
+                    pivotColumns,
+                    pivotRows,
+                    currentColumnNames
+                );
+            }
+
+            var cutResult = CuttingPlaneUtils.AddGomoryFractionalCut(
+                currentTableau,
+                currentColumnNames,
+                cuttingIndexResult.CuttingRow,
+                cutNumber
+            );
+
+            if (!cutResult.Success)
+            {
+                return new(
+                    false,
+                    cutResult.Message,
+                    tables,
+                    pivotColumns,
+                    pivotRows,
+                    currentColumnNames
+                );
+            }
+
         }
 
         return new(
