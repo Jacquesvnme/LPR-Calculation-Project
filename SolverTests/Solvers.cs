@@ -14,6 +14,7 @@ public sealed class Solvers
     private IImporter _importer = null!;
     private ISolverSelection _solver = null!;
     private IExporter _exporter = null!;
+    private LprSolver.Services.SessionInformation _sessionInformation = null!;
 
     #region Required Services & Methods
     /// <summary>
@@ -31,6 +32,8 @@ public sealed class Solvers
         _importer = _serviceProvider.GetRequiredService<IImporter>();
         _solver = _serviceProvider.GetRequiredService<ISolverSelection>();
         _exporter = _serviceProvider.GetRequiredService<IExporter>();
+        _sessionInformation =
+            _serviceProvider.GetRequiredService<LprSolver.Services.SessionInformation>();
     }
 
     /// <summary>
@@ -108,6 +111,8 @@ public sealed class Solvers
     private async Task DefaultSolver(SolverAlgorithm solverAlgorithm)
     {
         var (importFilePath, exportFilePath) = await GetAbsoluteFilePaths();
+        SessionInformation(solverAlgorithm, importFilePath, exportFilePath);
+
         var importResult = await _importer.ImportDataFromTextFile(importFilePath);
 
         Assert.IsTrue(importResult.IsSuccess, importResult.Message);
@@ -130,6 +135,29 @@ public sealed class Solvers
     #endregion
 
     #region Utility Methods
+    private void SessionInformation(
+        SolverAlgorithm solverAlgorithm,
+        string importFilePath,
+        string exportFilePath
+    )
+    {
+        // Defaulted session information
+        var completedEvents = new List<string>()
+        {
+            "SolverTests.Solvers.cs executed"
+        };
+
+        _sessionInformation.CurrentSession = new()
+        {
+            SessionId = Guid.NewGuid(),
+            ImportFilePath = importFilePath,
+            ExportFilePath = exportFilePath,
+            SelectedAlgorithm = solverAlgorithm,
+            AlgorithmOptions = new List<AlgorithmAnalysisOptions>(),
+            CompletedEvents = completedEvents,
+        };
+    }
+
     private async Task<(string ImportFilePath, string ExportFilePath)> GetAbsoluteFilePaths()
     {
         var importFilePath = _configuration["ImportLocation"];
