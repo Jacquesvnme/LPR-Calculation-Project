@@ -202,16 +202,108 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
         List<string> columnNames
     )
     {
-        var tables = new List<object>();
+        // Determine the number of generated cuts
+        // Allocates simplexTables as an expected double[,] value
+        var initialTableau = simplexTables[0] as double[,];
+        var generatedCutCount = 0;
 
-        var exportReport = new ExportReport
+        if (initialTableau != null)
         {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables },
+            var originalColumnCount = initialTableau.GetLength(1) - 1;
+            generatedCutCount = columnNames.Count - originalColumnCount;
+
+            if (generatedCutCount < 0)
+            {
+                generatedCutCount = 0;
+            }
+        }
+
+        // Add the additional information
+        var additionalData = new AdditionalData
+        {
+            Title = "Additional Data for Cutting Plane Solver",
+            Rows = new List<string>
+            {
+                $"Generated Cuts: {generatedCutCount}",
+                $"Dual Simplex Pivots: {pivotColumns.Count}",
+                $"Recorded Tableaus: {simplexTables.Count}",
+            },
         };
 
-        return new(true, "Dummy cutting plane table created successfully.", exportReport);
+        // Add the important information
+        var importantDetails = new ImportantDetails
+        {
+            Title = "Important Details for Cutting Plane Solver",
+        };
+
+        for (var index = 0; index < pivotColumns.Count; index++)
+        {
+            var pivotColumn = pivotColumns[index];
+            importantDetails.Rows.Add(
+                $"Dual pivot {index + 1}: Column = {columnNames[pivotColumn]} (Index: {pivotColumn}), Row = {pivotRows[index]}"
+            );
+        }
+
+        if (importantDetails.Rows.Count == 0)
+        {
+            importantDetails.Rows.Add("No dual-simplex pivots were required.");
+        }
+
+        // Add the tables information
+        var exportTables = new ExportTable { Title = "Cutting Plane Tableaus" };
+
+        for (var tableIndex = 0; tableIndex < simplexTables.Count; tableIndex++)
+        {
+            // loop through the tables and add them to the exportTables object
+            if (simplexTables[tableIndex] is not double[,] tableau)
+            {
+                continue;
+            }
+
+            // Add the headings and rows for the tableau
+            var tableauColumnCount = tableau.GetLength(1) - 1;
+            var tableColumnNames = columnNames.Take(tableauColumnCount).ToList();
+            var rows = new List<List<string>>();
+            var headings = new List<string> { "Row" };
+            headings.AddRange(tableColumnNames);
+            headings.Add("RHS");
+            rows.Add(headings);
+
+            // Add the rows line for line,
+            // formatting the values to 3 decimal place and ignoring sensitive formatting
+            for (var row = 0; row < tableau.GetLength(0); row++)
+            {
+                var values = new List<string> { row.ToString() };
+                for (var column = 0; column < tableau.GetLength(1); column++)
+                {
+                    values.Add(tableau[row, column].ToString("0.###", CultureInfo.InvariantCulture));
+                }
+                rows.Add(values);
+            }
+
+            // Add the table to the exportTables object with a title indicating the table index
+            exportTables.Tables.Add(
+                tableIndex == 0 ? "Table 0 (Primal optimum)" : $"\nTable {tableIndex}"
+            );
+            exportTables.Tables.Add(rows);
+        }
+
+        // Compile the final export report with all the gathered information
+        var exportReport = new ExportReport
+        {
+            AdditionalData = additionalData,
+            ImportantDetails = importantDetails,
+            SensitivityAnalysis = new SensitivityAnalysis
+            {
+                Title = "Sensitivity Analysis for Cutting Plane Solver",
+                Rows = new List<string> { "None available" },
+            },
+            Tables = exportTables,
+        };
+
+        // Console print all information
+        ConsolePrinter.PrintOutputData(exportReport);
+
+        return new(true, "Cutting-plane tables created successfully.", exportReport);
     }
 }
