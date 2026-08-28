@@ -382,8 +382,7 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         Console.WriteLine("      BRANCH AND BOUND KNAPSACK"); //TODO tables.title
         Console.WriteLine("===");
 
-        int numberOfItems;
-        numberOfItems = 5; // TODO get number of items
+        int numberOfItems = linearProgram.Constraints.Count();
         while (numberOfItems <= 0) // get new number if not int or neg or zero
         {
             Console.Write("\nNew number of items: ");
@@ -401,8 +400,16 @@ public class B_B_Knapsack_Algorithm : IB_B_Knapsack_Algorithm
         Console.WriteLine("Number of items: " + numberOfItems);
 
         //Ask for knapsack capacity
-        int capacity;
-        capacity = 15; // TODO get capacity
+        if (
+            !int.TryParse(
+                linearProgram.Constraints.First().RightHandSide.ToString(),
+                out int capacity
+            )
+        )
+        {
+            capacity = 0;
+        }
+
         while (capacity <= 0) // get new number if not int or neg or zero
         {
             Console.Write("\nNew capacity: ");
