@@ -1,4 +1,5 @@
-﻿using LprSolver.Application.Solvers.AlgorithmSet1;
+﻿using System.Globalization;
+using LprSolver.Application.Solvers.AlgorithmSet1;
 using LprSolver.Application.SolverUtils;
 using LprSolver.Models;
 
@@ -91,11 +92,13 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
 
         while (true)
         {
+            // Determines the cutting plane index, row and values
             var cuttingIndexResult = CuttingPlaneUtils.DetermineCuttingIndex(
                 currentTableau,
                 currentColumnNames
             );
 
+            // If cutting index is -1, then we have an integer solution or failure
             if (!cuttingIndexResult.Success)
             {
                 return new(
