@@ -77,8 +77,41 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             );
         }
 
+        // Add binary bounds to a copy so the imported model remains unchanged.
+        var workingCopy = linearProgram.DeepCopy();
+
+        // The tableau already assumes x >= 0, so each binary variable only needs
+        // an explicit x <= 1 constraint to keep the LP relaxation within its bounds.
+        for (
+            var variableIndex = 0;
+            variableIndex < workingCopy.Restriction.Restrictions.Count;
+            variableIndex++
+        )
+        {
+            if (workingCopy.Restriction.Restrictions[variableIndex] != VariableRestriction.Binary)
+            {
+                continue;
+            }
+
+            // Use a unit-vector row so the new constraint targets this variable only.
+            var coefficients = new List<double>();
+            for (var i = 0; i < workingCopy.Objective.Objectives.Count; i++)
+            {
+                coefficients.Add(i == variableIndex ? 1.0 : 0.0);
+            }
+
+            workingCopy.Constraints.Add(
+                new Constraint
+                {
+                    Coefficients = coefficients,
+                    Relation = ConstraintRelation.LessOrEqual,
+                    RightHandSide = 1.0,
+                }
+            );
+        }
+
         var (initialTableau, initialColumnNames) = PrimalSimplexUtils.BuildInitialTableau(
-            linearProgram.DeepCopy()
+            workingCopy
         );
 
         var tables = new List<double[,]> { (double[,])initialTableau.Clone() };
@@ -111,13 +144,21 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             var nodeColumnNames = node.ColumnNames;
             var rhsColumnIndex = nodeTableau.GetLength(1) - 1;
 
-            // Bound: this node's relaxation can only get worse (or equal) as more
-            // constraints are added below it, so if it's already no better than the
-            // best integer solution found so far, there's no point exploring it.
-            if (
+            // The solved relaxation gives the best objective this node can reach.
+            var nodeObjectiveValue = nodeTableau[0, rhsColumnIndex];
+            var isMaximization =
+                linearProgram.Objective.Direction == OptimizationDirection.Maximize;
+
+            // Prune the node when its bound cannot beat the best integer solution.
+            var cannotImprove =
                 bestObjectiveValue.HasValue
-                && nodeTableau[0, rhsColumnIndex] >= bestObjectiveValue.Value - 1e-9
-            )
+                && (
+                    isMaximization
+                        ? nodeObjectiveValue <= bestObjectiveValue.Value + 1e-9
+                        : nodeObjectiveValue >= bestObjectiveValue.Value - 1e-9
+                );
+
+            if (cannotImprove)
             {
                 continue;
             }
@@ -129,7 +170,16 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
                 // Every basic variable is integer - this is a candidate solution.
                 var objectiveValue = nodeTableau[0, rhsColumnIndex];
 
-                if (!bestObjectiveValue.HasValue || objectiveValue < bestObjectiveValue.Value)
+                // Keep the candidate if it improves the chosen objective direction.
+                var isBetter =
+                    !bestObjectiveValue.HasValue
+                    || (
+                        isMaximization
+                            ? objectiveValue > bestObjectiveValue.Value + 1e-9
+                            : objectiveValue < bestObjectiveValue.Value - 1e-9
+                    );
+
+                if (isBetter)
                 {
                     bestObjectiveValue = objectiveValue;
                     bestColumnNames = nodeColumnNames;
@@ -146,9 +196,8 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             var floorBound = Math.Floor(branchValue);
             var ceilBound = Math.Ceiling(branchValue);
 
-            // Branch on the same fractional row in both directions. AddBBConstraint
-            // re-derives the branch row itself, so passing the unmodified parent
-            // tableau to both calls is what keeps the branching variable consistent.
+            // Split around the fractional value. Both constraints use the original
+            // parent tableau so they branch on the same variable.
             var branchPlan = new[]
             {
                 (Relation: ConstraintRelation.GreaterOrEqual, Bound: ceilBound),
@@ -197,11 +246,11 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
             );
         }
 
+        // The tableau already stores the objective with its final sign.
         var solutionSummary = BuildSolutionSummary(
             bestTableau!,
             bestColumnNames!,
-            bestObjectiveValue!.Value,
-            linearProgram.Objective.Direction
+            bestObjectiveValue!.Value
         );
 
         return (tables, tableColumnNames, pivotHistory, solutionSummary);
@@ -210,13 +259,9 @@ public class B_B_Simplex_Algorithm : IB_B_Simplex_Algorithm
     private List<string> BuildSolutionSummary(
         double[,] tableau,
         List<string> columnNames,
-        double rawObjectiveValue,
-        OptimizationDirection direction
+        double objectiveValue
     )
     {
-        var objectiveValue =
-            direction == OptimizationDirection.Maximize ? -rawObjectiveValue : rawObjectiveValue;
-
         var summary = new List<string>
         {
             "Status: Optimal integer solution found",
