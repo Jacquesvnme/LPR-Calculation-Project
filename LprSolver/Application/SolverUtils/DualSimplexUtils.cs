@@ -148,4 +148,127 @@ public static class DualSimplexUtils
 
     #endregion
 
+    #region Solver
+
+    /// <summary>
+    /// Applies dual-simplex pivots until the tableau becomes primal feasible or reaches
+    /// a terminal failure. Returns the final tableau and the recorded pivot history.
+    /// </summary>
+    public static (
+        bool Success,
+        string Message,
+        double[,] Tableau,
+        List<double[,]> Tables,
+        List<int> PivotColumns,
+        List<int> PivotRows
+    ) Solve(double[,] initialTableau, int maximumIterations = MAXIMUM_ITERATIONS)
+    {
+        var validation = ValidateTableau(initialTableau);
+        if (!validation.Success)
+        {
+            return (
+                false,
+                validation.Message,
+                new double[0, 0],
+                new List<double[,]>(),
+                new List<int>(),
+                new List<int>()
+            );
+        }
+
+        if (maximumIterations < 1)
+        {
+            return (
+                false,
+                "The maximum number of dual-simplex iterations must be greater than zero.",
+                new double[0, 0],
+                new List<double[,]>(),
+                new List<int>(),
+                new List<int>()
+            );
+        }
+
+        // Work on a copy so solving does not modify the caller's tableau.
+        var currentTableau = (double[,])initialTableau.Clone();
+        var tables = new List<double[,]>();
+        var pivotColumns = new List<int>();
+        var pivotRows = new List<int>();
+        var iteration = 0;
+
+        while (true)
+        {
+            // Gets the pivot row
+            var pivotRowResult = FindPivotRow(currentTableau);
+            if (!pivotRowResult.Success)
+            {
+                // No negative constraint RHS remains, so primal feasibility is restored.
+                return (
+                    true,
+                    "The dual-simplex tableau is feasible.",
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            // Max iterations reached
+            if (iteration >= maximumIterations)
+            {
+                return (
+                    false,
+                    $"The dual-simplex algorithm exceeded {maximumIterations} iterations.",
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            // Gets the pivot column
+            var pivotColumnResult = FindPivotColumn(currentTableau, pivotRowResult.PivotRow);
+            if (!pivotColumnResult.Success)
+            {
+                // A negative RHS with no eligible entering column cannot be repaired.
+                return (
+                    false,
+                    $"No pivot column has been found for dual-simplex row {pivotRowResult.PivotRow} & {pivotRowResult.Message}.",
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            // Both simplex methods use the same row-operation implementation.
+            currentTableau = PrimalSimplexUtils.Pivot(
+                currentTableau,
+                pivotRowResult.PivotRow,
+                pivotColumnResult.PivotColumn
+            );
+
+            var iterationValidation = ValidateTableau(currentTableau);
+            if (!iterationValidation.Success)
+            {
+                return (
+                    false,
+                    iterationValidation.Message,
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            // Keep track of the pivot history
+            pivotColumns.Add(pivotColumnResult.PivotColumn);
+            pivotRows.Add(pivotRowResult.PivotRow);
+
+            // Keep an independent snapshot for history tracking
+            tables.Add((double[,])currentTableau.Clone());
+            iteration++;
+        }
+    }
+
+    #endregion
 }
