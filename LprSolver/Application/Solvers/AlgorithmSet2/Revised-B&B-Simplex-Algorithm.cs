@@ -29,31 +29,6 @@ public class Revised_B_B_Simplex_Algorithm : IRevised_B_B_Simplex_Algorithm
         LinearProgram linearProgram
     )
     {
-        // Add code here to implement the Algorithm.
-        // Keep in mind that the return data should match the expected output format for the application.
-
-        // Call your own custom methods inside this class but make them private to avoid exposing them outside of this class.
-        OtherMethods();
-
-        var tables = new List<object>();
-
-        var exportReport = new ExportReport
-        {
-            AdditionalData = new AdditionalData(),
-            ImportantDetails = new ImportantDetails(),
-            SensitivityAnalysis = new SensitivityAnalysis(),
-            Tables = new ExportTable { Tables = tables },
-        };
-
-        return new(
-            true,
-            "Dummy revised branch and bound simplex table created successfully.",
-            exportReport
-        );
-    }
-
-    private void OtherMethods()
-    {
-        //dummy method
+        return new(false, "Method not implemented.", null);
     }
 }
