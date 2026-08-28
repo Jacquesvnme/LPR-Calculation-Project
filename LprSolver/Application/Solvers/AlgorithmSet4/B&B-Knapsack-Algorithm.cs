@@ -19,10 +19,9 @@ public interface IB_B_Knapsack_Algorithm
 class Item
 {
     public string Name { get; set; } //name of the item e.g. xi = where i = 1,2,...
-    public int Weight { get; set; } //weight of the item
-    public int Value { get; set; } //value or profit of the item
-    //TODO add rank
-
+    public double Weight { get; set; } //weight of the item
+    public double Value { get; set; } //value or profit of the item
+    
     //Value-to-Weight ratio
     //Used when calculating the upper bound
     public double Ratio
@@ -30,12 +29,23 @@ class Item
         get { return (double)Value / Weight; }
     }
 
-    public Item(string name, int weight, int value) //constructure
+    public Item(string name, double weight, double value) //constructure
     {
         Name = name;
         Weight = weight; //TODO change to double
         Value = value; //TODO change to double
     }
+} 
+class ItemRanked : Item
+{
+    public int Rank { get; set; } = 0; //for the ratio test
+    public ItemRanked(string name, double weight, double value, int rank) 
+        : base(name, weight, value) //constructure
+    {
+        Rank = rank;
+    }
+
+
 }
 
 // One node of the Branch and Bound Tree
@@ -44,12 +54,12 @@ class Node
     public string Number { get; set; } //node number e.g. 1.1 , 1.2
     public int Level { get; set; } // Intex of the last item considerd
     public string ItemName { get; set; } // Name of item being condiderd at this node
-    public int Weight { get; set; } // Total Weight of items selected so far
-    public int Value { get; set; } // Total Value of the items so far
+    public double Weight { get; set; } // Total Weight of items selected so far
+    public double Value { get; set; } // Total Value of the items so far
     public double Bound { get; set; } // Upperbound: Maximum value that could be obtained from this node
     public string Decision { get; set; } //Include / Exclude item
 
-    public Node(string number, int level, string itemName, int weight, int value, string decision)
+    public Node(string number, int level, string itemName, double weight, double value, string decision)
     {
         Number = number;
         Level = level;
@@ -91,7 +101,7 @@ class Knapsack
         double bound = node.Weight;
 
         // Weight currently being considerd
-        int totalWeight = node.Weight;
+        double totalWeight = node.Weight;
 
         // Start with the next item in the ratio
         int i = node.Level + 1;
@@ -108,7 +118,7 @@ class Knapsack
         // only for calculating the bound, items remain intergers
         if (i < items.Count)
         {
-            int remainingCapacity = capacity - totalWeight;
+            double remainingCapacity = capacity - totalWeight;
             bound += remainingCapacity * items[i].Ratio;
         }
         return bound;
@@ -144,10 +154,10 @@ class Knapsack
         queue = new PriorityQueue<Node, int>();
 
         // remaining capacity left over at the root
-        int remainingCapacity = capacity - root.Weight;
+        double remainingCapacity = capacity - root.Weight;
 
         // add root to the priority queue
-        queue.Enqueue(root, remainingCapacity);
+        queue.Enqueue(root, (int)remainingCapacity);
 
         /*
          BRANCH AND BOUND KNAPSACK
@@ -208,8 +218,8 @@ class Knapsack
             //explore branch if it can make a better solution
             if (skip.Bound > bestValue)
             {
-                int remaining = capacity - skip.Weight;
-                queue.Enqueue(skip, remaining);
+                double remaining = capacity - skip.Weight;
+                queue.Enqueue(skip, (int)remaining);
             }
 
             /*
@@ -259,14 +269,14 @@ class Knapsack
                 //if this solution is better than best, update bestValue
                 if (take.Value > bestValue)
                 {
-                    bestValue = take.Value;
+                    bestValue = (int)take.Value;
                 }
 
                 //only explore this node if it has potential to improve the current solution
                 if (take.Bound > bestValue)
                 {
-                    int remaining = capacity - take.Weight;
-                    queue.Enqueue(take, remaining);
+                    double remaining = capacity - take.Weight;
+                    queue.Enqueue(take, (int)remaining);
                 }
             }
             else
