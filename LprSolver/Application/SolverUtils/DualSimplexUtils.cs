@@ -201,6 +201,18 @@ public static class DualSimplexUtils
             var pivotRowResult = FindPivotRow(currentTableau);
             if (!pivotRowResult.Success)
             {
+                return (
+                    false,
+                    pivotRowResult.Message,
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            if (pivotRowResult.PivotRow == -1)
+            {
                 // No negative constraint RHS remains, so primal feasibility is restored.
                 return (
                     true,
@@ -229,10 +241,22 @@ public static class DualSimplexUtils
             var pivotColumnResult = FindPivotColumn(currentTableau, pivotRowResult.PivotRow);
             if (!pivotColumnResult.Success)
             {
+                return (
+                    false,
+                    pivotColumnResult.Message,
+                    currentTableau,
+                    tables,
+                    pivotColumns,
+                    pivotRows
+                );
+            }
+
+            if (pivotColumnResult.PivotColumn == -1)
+            {
                 // A negative RHS with no eligible entering column cannot be repaired.
                 return (
                     false,
-                    $"No pivot column has been found for dual-simplex row {pivotRowResult.PivotRow} & {pivotRowResult.Message}.",
+                    $"No pivot column can restore feasibility for dual-simplex row {pivotRowResult.PivotRow}.",
                     currentTableau,
                     tables,
                     pivotColumns,
