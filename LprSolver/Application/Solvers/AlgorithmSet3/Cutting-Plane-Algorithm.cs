@@ -148,6 +148,37 @@ public class Cutting_Plane_Algorithm : ICutting_Plane_Algorithm
                 );
             }
 
+            currentTableau = cutResult.Tableau;
+            currentColumnNames = cutResult.ColumnNames;
+
+            // Keeping history of results
+            tables.Add((double[,])currentTableau.Clone());
+            cutNumber++;
+
+            // Normal dual simplex
+            var dualSimplexResult = DualSimplexUtils.Solve(currentTableau);
+            if (!dualSimplexResult.Success)
+            {
+                return new(
+                    false,
+                    dualSimplexResult.Message,
+                    tables,
+                    pivotColumns,
+                    pivotRows,
+                    currentColumnNames
+                );
+            }
+
+            // Keeping history of results
+            currentTableau = dualSimplexResult.Tableau;
+            pivotColumns.AddRange(dualSimplexResult.PivotColumns);
+            pivotRows.AddRange(dualSimplexResult.PivotRows);
+
+            // Keeping history of results
+            foreach (var table in dualSimplexResult.Tables)
+            {
+                tables.Add((double[,])table.Clone());
+            }
         }
 
         return new(
